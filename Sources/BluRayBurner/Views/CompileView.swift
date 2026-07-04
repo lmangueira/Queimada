@@ -39,9 +39,10 @@ struct CompileView: View {
                 // Disc overview: virtual folder tree (sidebar) + contents of
                 // the selected folder (detail) — how the disc will look.
                 DiscTreeSplitView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 280)
+        .frame(maxWidth: .infinity, minHeight: 280, maxHeight: .infinity)
         .background(RoundedRectangle(cornerRadius: 8).strokeBorder(
             dropTargeted ? Color.accentColor : Color.secondary.opacity(0.3),
             style: StrokeStyle(lineWidth: 2, dash: [6])
@@ -145,11 +146,19 @@ struct DiscTreeSplitView: View {
                 Divider()
 
                 if app.compileVM.visibleItems.isEmpty {
-                    ContentUnavailableView(
-                        "Empty folder",
-                        systemImage: "folder",
-                        description: Text("Drop files here to add them to “\(app.compileVM.selectedFolderName)”.")
-                    )
+                    // Compact empty state — a folder pane, not a full-screen
+                    // placeholder.
+                    VStack(spacing: 6) {
+                        Image(systemName: "folder")
+                            .font(.system(size: 24))
+                            .foregroundStyle(.tertiary)
+                        Text("Drop files here to add them to “\(app.compileVM.selectedFolderName)”.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding()
                 } else {
                     List {
                         ForEach(app.compileVM.visibleItems) { item in
