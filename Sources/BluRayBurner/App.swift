@@ -15,6 +15,15 @@ struct BluRayBurnerApp: App {
     }
 }
 
+/// Top-level screens: a guided flow instead of tabs. The welcome screen is
+/// the single entry point; drops route to the right workflow.
+enum AppScreen: Equatable {
+    case welcome
+    case compile     // data disc: tree/split view
+    case imageBurn   // verbatim disc-image burn with image info
+    case erase
+}
+
 /// Composition root: picks the service implementation and owns shared models.
 @MainActor
 @Observable
@@ -27,6 +36,60 @@ final class AppModel {
     let burnVM: BurnViewModel
     let eraseVM: EraseViewModel
     let imageVM: ImageBurnViewModel
+
+    /// Current screen in the guided flow.
+    var screen: AppScreen = .welcome
+    /// A single dropped disc image awaiting the write-vs-add decision.
+    var pendingImageURL: URL?
+
+    // MARK: - Flow navigation
+
+    /// Route a welcome-screen drop (core-tested decision logic).
+    func handleWelcomeDrop(urls: [URL]) {
+        switch DropRouter.decide(urls: urls) {
+        case .askImageOrData(let imageURL):
+            pendingImageURL = imageURL
+        case .dataItems(let urls):
+            addDataItems(urls: urls)
+            screen = .compile
+        case nil:
+            break
+        }
+    }
+
+    /// Pending image → write its contents to disc.
+    func chooseWriteImage() {
+        guard let url = pendingImageURL else { return }
+        pendingImageURL = nil
+        imageVM.select(imageAt: url)
+        screen = .imageBurn
+    }
+
+    /// Pending image → treat as a plain file on a data disc.
+    func chooseAddImageAsFile() {
+        guard let url = pendingImageURL else { return }
+        pendingImageURL = nil
+        addDataItems(urls: [url])
+        screen = .compile
+    }
+
+    func addDataItems(urls: [URL]) {
+        for url in urls {
+            if let item = CompilationItemFactory.make(from: url) {
+                compileVM.add(item)
+            }
+        }
+    }
+
+    /// Back to the welcome screen, discarding in-progress selections.
+    /// Never navigates away mid-burn (the burn views own that state).
+    func startOver() {
+        guard case .idle = burnVM.state else { return }
+        compileVM.clear()
+        imageVM.clear()
+        pendingImageURL = nil
+        screen = .welcome
+    }
 
     init() {
         // BRB_MOCK=1 runs the app against the mock (dev/smoke without hardware).

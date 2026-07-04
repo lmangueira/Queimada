@@ -115,4 +115,10 @@ public final class CompileViewModel {
     public func setVolumeName(_ name: String) {
         compilation.volumeName = name
     }
+
+    /// Start over: empty compilation, selection back at the disc root.
+    public func clear() {
+        compilation = Compilation()
+        selectedFolderID = Self.rootID
+    }
 }

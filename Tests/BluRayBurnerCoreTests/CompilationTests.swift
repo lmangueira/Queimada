@@ -221,6 +221,23 @@ func eventually(
         #expect(compilation.item(withID: UUID()) == nil)
     }
 
+    @Test func clearResetsCompilationAndSelection() async throws {
+        // Welcome-flow "Start Over".
+        let service = MockDiscBurningService()
+        let monitor = await DeviceMonitor(service: service)
+        let vm = await CompileViewModel(deviceMonitor: monitor)
+        await MainActor.run {
+            let folder = CompilationItem(
+                name: "f", sourceURL: URL(fileURLWithPath: "/f"), kind: .folder(children: [])
+            )
+            vm.add(folder)
+            vm.selectedFolderID = folder.id
+            vm.clear()
+            #expect(vm.compilation.isEmpty)
+            #expect(vm.selectedFolderID == CompileViewModel.rootID)
+        }
+    }
+
     @Test func childrenAccessorFollowsOutlineContract() {
         // OutlineGroup contract: folders → non-nil (empty ok), files → nil.
         #expect(makeFile("f.bin", size: 1).children == nil)

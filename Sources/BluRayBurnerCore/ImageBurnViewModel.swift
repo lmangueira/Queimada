@@ -5,7 +5,8 @@ import Observation
 @MainActor
 @Observable
 public final class ImageBurnViewModel {
-    public static let supportedExtensions: Set<String> = ["iso", "dmg", "img"]
+    /// Canonical list lives in `DiscImageFormats` (shared with DropRouter).
+    nonisolated public static var supportedExtensions: Set<String> { DiscImageFormats.extensions }
 
     public enum ValidationResult: Sendable, Equatable {
         case ok
@@ -36,7 +37,7 @@ public final class ImageBurnViewModel {
     @discardableResult
     public func select(imageAt url: URL) -> ValidationResult {
         let ext = url.pathExtension.lowercased()
-        guard Self.supportedExtensions.contains(ext) else {
+        guard DiscImageFormats.extensions.contains(ext) else {
             selectedImage = nil
             imageSizeBytes = nil
             return .unsupportedType(ext: ext)

@@ -5,16 +5,55 @@ struct ContentView: View {
     @Environment(AppModel.self) private var app
 
     var body: some View {
-        TabView {
-            CompileView()
-                .tabItem { Label("Burn Files", systemImage: "opticaldisc") }
-            ImageBurnView()
-                .tabItem { Label("Burn Image", systemImage: "doc.badge.gearshape") }
-            EraseView()
-                .tabItem { Label("Erase", systemImage: "eraser") }
+        VStack(spacing: 0) {
+            // Back affordance for every screen past welcome (hidden mid-burn:
+            // startOver() refuses while a burn/erase is running anyway).
+            if app.screen != .welcome {
+                HStack {
+                    Button {
+                        app.startOver()
+                    } label: {
+                        Label("Start Over", systemImage: "chevron.backward")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .disabled(!canGoBack)
+                    Spacer()
+                    Text(screenTitle).font(.headline).foregroundStyle(.secondary)
+                    Spacer()
+                    // Balance the leading button so the title stays centered.
+                    Label("Start Over", systemImage: "chevron.backward").hidden()
+                }
+                .padding(.bottom, 8)
+            }
+
+            switch app.screen {
+            case .welcome: WelcomeView()
+            case .compile: CompileView()
+            case .imageBurn: ImageBurnView()
+            case .erase: EraseView()
+            }
         }
         .padding()
         .overlay(alignment: .bottom) { DeviceStatusBar() }
+        .animation(.default, value: app.screen)
+    }
+
+    private var canGoBack: Bool {
+        if case .idle = app.burnVM.state {
+            if case .erasing = app.eraseVM.state { return false }
+            return true
+        }
+        return false
+    }
+
+    private var screenTitle: String {
+        switch app.screen {
+        case .welcome: return ""
+        case .compile: return "Data Disc"
+        case .imageBurn: return "Write Disc Image"
+        case .erase: return "Erase Disc"
+        }
     }
 }
 

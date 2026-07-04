@@ -56,7 +56,9 @@ struct EraseView: View {
     }
 }
 
-/// Burn an existing .iso/.dmg/.img verbatim (U8).
+/// Burn an existing .iso/.dmg/.img verbatim (U8). Reached from the welcome
+/// flow with an image already selected; shows the image's details before
+/// committing to the burn.
 struct ImageBurnView: View {
     @Environment(AppModel.self) private var app
 
@@ -66,11 +68,7 @@ struct ImageBurnView: View {
         VStack(spacing: 16) {
             if case .idle = app.burnVM.state {
                 if let image = app.imageVM.selectedImage {
-                    Image(systemName: "doc.badge.gearshape").font(.system(size: 44)).foregroundStyle(.secondary)
-                    Text(image.lastPathComponent).font(.headline)
-                    if let size = app.imageVM.imageSizeBytes {
-                        Text(ByteFormat.string(size)).foregroundStyle(.secondary)
-                    }
+                    imageInfoCard(image)
                     validationLabel
                     Toggle("Verify after burn", isOn: $imageVM.verifyAfterBurn)
                     HStack {
@@ -91,18 +89,74 @@ struct ImageBurnView: View {
                         .disabled(!app.imageVM.canBurn)
                     }
                 } else {
-                    ContentUnavailableView(
-                        "Burn a disc image",
-                        systemImage: "doc.badge.gearshape",
-                        description: Text("Write an .iso, .dmg, or .img file to disc exactly as-is.")
-                    )
+                    // Only reachable via "Choose Different Image…" → Cancel.
                     Button("Choose Image…") { chooseImage() }
+                        .adaptiveGlassButton()
                 }
             } else {
                 BurnProgressView()
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 260)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// The useful facts about the image before burning it.
+    private func imageInfoCard(_ image: URL) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "opticaldisc.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(.secondary)
+            Text(image.lastPathComponent).font(.title3.weight(.semibold))
+
+            Grid(alignment: .leading, horizontalSpacing: 24, verticalSpacing: 6) {
+                GridRow {
+                    Text("Size").foregroundStyle(.secondary)
+                    Text(app.imageVM.imageSizeBytes.map(ByteFormat.string) ?? "—")
+                        .monospacedDigit()
+                }
+                GridRow {
+                    Text("Kind").foregroundStyle(.secondary)
+                    Text(kindDescription(image))
+                }
+                GridRow {
+                    Text("Modified").foregroundStyle(.secondary)
+                    Text(modifiedDescription(image))
+                }
+                GridRow {
+                    Text("Location").foregroundStyle(.secondary)
+                    Text(image.deletingLastPathComponent().path)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .frame(maxWidth: 300, alignment: .leading)
+                }
+                if let media = app.deviceMonitor.currentMedia, let size = app.imageVM.imageSizeBytes {
+                    GridRow {
+                        Text("Target disc").foregroundStyle(.secondary)
+                        Text("\(media.type.rawValue) — \(ByteFormat.string(max(media.capacityBytes - size, 0))) left after burn")
+                            .monospacedDigit()
+                    }
+                }
+            }
+            .font(.callout)
+        }
+        .padding(24)
+        .adaptiveGlass(in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func kindDescription(_ url: URL) -> String {
+        switch url.pathExtension.lowercased() {
+        case "iso": return "ISO 9660/UDF disc image (.iso)"
+        case "img": return "Raw disc image (.img)"
+        case "dmg": return "Apple disk image (.dmg)"
+        default: return url.pathExtension.uppercased()
+        }
+    }
+
+    private func modifiedDescription(_ url: URL) -> String {
+        guard let date = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate else {
+            return "—"
+        }
+        return date.formatted(date: .abbreviated, time: .shortened)
     }
 
     @ViewBuilder
