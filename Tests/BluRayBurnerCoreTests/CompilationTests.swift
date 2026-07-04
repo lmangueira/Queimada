@@ -173,6 +173,54 @@ func eventually(
         #expect(compilation.totalBytes == 0)
     }
 
+    @Test func addIntoNestedFolderLandsThere() {
+        // Split view: drops land in the selected virtual folder.
+        let sub = CompilationItem(
+            name: "sub", sourceURL: URL(fileURLWithPath: "/src/f/sub"), kind: .folder(children: [])
+        )
+        let folder = CompilationItem(
+            name: "f", sourceURL: URL(fileURLWithPath: "/src/f"), kind: .folder(children: [sub])
+        )
+        var compilation = Compilation()
+        compilation.add(folder)
+
+        compilation.add(makeFile("dropped.dat", size: 42), into: sub.id)
+
+        #expect(compilation.item(withID: sub.id)?.children?.map(\.name) == ["dropped.dat"])
+        #expect(compilation.totalBytes == 42)
+        #expect(compilation.items.count == 1, "nothing added at top level")
+    }
+
+    @Test func addIntoMissingFolderFallsBackToRoot() {
+        var compilation = Compilation()
+        compilation.add(makeFile("dropped.dat", size: 1), into: UUID())
+        #expect(compilation.items.map(\.name) == ["dropped.dat"], "never silently dropped")
+    }
+
+    @Test func addIntoFolderResolvesDuplicateSiblingNames() {
+        let folder = CompilationItem(
+            name: "f", sourceURL: URL(fileURLWithPath: "/src/f"),
+            kind: .folder(children: [makeFile("a.txt", size: 1)])
+        )
+        var compilation = Compilation()
+        compilation.add(folder)
+        compilation.add(makeFile("a.txt", size: 2), into: folder.id)
+        #expect(compilation.item(withID: folder.id)?.children?.map(\.name) == ["a.txt", "a.txt 2"])
+    }
+
+    @Test func itemWithIDFindsAtAnyDepth() {
+        let deep = makeFile("deep.dat", size: 3)
+        let sub = CompilationItem(
+            name: "sub", sourceURL: URL(fileURLWithPath: "/s"), kind: .folder(children: [deep])
+        )
+        var compilation = Compilation()
+        compilation.add(CompilationItem(
+            name: "top", sourceURL: URL(fileURLWithPath: "/t"), kind: .folder(children: [sub])
+        ))
+        #expect(compilation.item(withID: deep.id)?.name == "deep.dat")
+        #expect(compilation.item(withID: UUID()) == nil)
+    }
+
     @Test func childrenAccessorFollowsOutlineContract() {
         // OutlineGroup contract: folders → non-nil (empty ok), files → nil.
         #expect(makeFile("f.bin", size: 1).children == nil)

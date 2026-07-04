@@ -66,18 +66,58 @@ public struct Compilation: Sendable, Equatable {
 
     public var totalBytes: Int64 { items.reduce(0) { $0 + $1.sizeBytes } }
 
-    /// Adds an item at the top level. A duplicate top-level name is resolved
+    /// Adds an item at the top level. A duplicate sibling name is resolved
     /// deterministically by appending " 2", " 3", ... (first free suffix).
     public mutating func add(_ item: CompilationItem) {
+        items = Self.appending(item, to: items)
+    }
+
+    /// Adds an item inside the virtual folder with the given id (nil = disc
+    /// root). If the folder does not exist, the item lands at the root —
+    /// never silently dropped.
+    public mutating func add(_ item: CompilationItem, into folderID: UUID?) {
+        guard let folderID, self.item(withID: folderID)?.children != nil else {
+            add(item)
+            return
+        }
+        items = Self.inserting(item, intoFolder: folderID, in: items)
+    }
+
+    /// Recursive lookup by id anywhere in the tree.
+    public func item(withID id: UUID) -> CompilationItem? {
+        func find(in items: [CompilationItem]) -> CompilationItem? {
+            for item in items {
+                if item.id == id { return item }
+                if let children = item.children, let hit = find(in: children) { return hit }
+            }
+            return nil
+        }
+        return find(in: items)
+    }
+
+    private static func appending(_ item: CompilationItem, to siblings: [CompilationItem]) -> [CompilationItem] {
         var item = item
-        if items.contains(where: { $0.name == item.name }) {
+        if siblings.contains(where: { $0.name == item.name }) {
             var counter = 2
-            while items.contains(where: { $0.name == "\(item.name) \(counter)" }) {
+            while siblings.contains(where: { $0.name == "\(item.name) \(counter)" }) {
                 counter += 1
             }
             item.name = "\(item.name) \(counter)"
         }
-        items.append(item)
+        return siblings + [item]
+    }
+
+    private static func inserting(_ new: CompilationItem, intoFolder folderID: UUID, in items: [CompilationItem]) -> [CompilationItem] {
+        items.map { item in
+            guard case .folder(let children) = item.kind else { return item }
+            var updated = item
+            if item.id == folderID {
+                updated.kind = .folder(children: appending(new, to: children))
+            } else {
+                updated.kind = .folder(children: inserting(new, intoFolder: folderID, in: children))
+            }
+            return updated
+        }
     }
 
     /// Removes an item anywhere in the tree — including a file *inside* a

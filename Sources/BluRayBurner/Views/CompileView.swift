@@ -36,18 +36,12 @@ struct CompileView: View {
                     description: Text("Everything you drop is written exactly as-is — names, folders, and contents.")
                 )
             } else {
-                // Tree view: folders expand to show their contents, and any
-                // file or subfolder can be pruned from the burn set.
-                List {
-                    OutlineGroup(app.compileVM.compilation.items, children: \.children) { item in
-                        CompilationRow(item: item) {
-                            app.compileVM.remove(id: item.id)
-                        }
-                    }
-                }
+                // Disc overview: virtual folder tree (sidebar) + contents of
+                // the selected folder (detail) — how the disc will look.
+                DiscTreeSplitView()
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 220)
+        .frame(maxWidth: .infinity, minHeight: 280)
         .background(RoundedRectangle(cornerRadius: 8).strokeBorder(
             dropTargeted ? Color.accentColor : Color.secondary.opacity(0.3),
             style: StrokeStyle(lineWidth: 2, dash: [6])
@@ -99,6 +93,81 @@ struct CompileView: View {
             }
         }
         return accepted
+    }
+}
+
+/// Split disc overview: virtual folders on the left, selected folder's
+/// contents on the right. Drops land in the selected folder.
+struct DiscTreeSplitView: View {
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        // List selection requires an optional binding; nil snaps to root.
+        let selection = Binding<UUID?>(
+            get: { app.compileVM.selectedFolderID },
+            set: { app.compileVM.selectedFolderID = $0 ?? CompileViewModel.rootID }
+        )
+
+        HSplitView {
+            // Sidebar: the disc root + folders-only tree.
+            List(selection: selection) {
+                Label {
+                    Text(app.compileVM.compilation.volumeName)
+                        .fontWeight(.semibold)
+                } icon: {
+                    Image(systemName: "opticaldisc")
+                }
+                .tag(Optional(CompileViewModel.rootID))
+
+                OutlineGroup(app.compileVM.folderTree, children: \.children) { node in
+                    Label(node.name, systemImage: "folder")
+                        .tag(Optional(node.id))
+                }
+            }
+            .listStyle(.sidebar)
+            .frame(minWidth: 150, idealWidth: 190, maxWidth: 320)
+
+            // Detail: contents of the selected folder.
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Image(systemName: app.compileVM.effectiveSelection == CompileViewModel.rootID
+                          ? "opticaldisc" : "folder.fill")
+                        .foregroundStyle(.secondary)
+                    Text(app.compileVM.selectedFolderName).font(.headline)
+                    Spacer()
+                    Text("Drops land here")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                Divider()
+
+                if app.compileVM.visibleItems.isEmpty {
+                    ContentUnavailableView(
+                        "Empty folder",
+                        systemImage: "folder",
+                        description: Text("Drop files here to add them to “\(app.compileVM.selectedFolderName)”.")
+                    )
+                } else {
+                    List {
+                        ForEach(app.compileVM.visibleItems) { item in
+                            CompilationRow(item: item) {
+                                app.compileVM.remove(id: item.id)
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                // Click a folder to drill into it.
+                                if item.children != nil {
+                                    app.compileVM.selectedFolderID = item.id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .frame(minWidth: 260, maxWidth: .infinity)
+        }
     }
 }
 
