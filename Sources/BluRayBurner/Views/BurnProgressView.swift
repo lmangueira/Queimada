@@ -24,6 +24,7 @@ struct BurnProgressView: View {
                 Button("Cancel Burn", role: .destructive) {
                     app.burnVM.cancel()
                 }
+                .adaptiveGlassButton()
 
             case .done:
                 Image(systemName: "checkmark.circle.fill")
@@ -33,6 +34,7 @@ struct BurnProgressView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                 Button("Done") { app.burnVM.reset() }
+                    .adaptiveGlassProminentButton()
                     .keyboardShortcut(.defaultAction)
 
             case .failed(let error):
@@ -43,9 +45,12 @@ struct BurnProgressView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                 Button("OK") { app.burnVM.reset() }
+                    .adaptiveGlassProminentButton()
                     .keyboardShortcut(.defaultAction)
             }
         }
+        .padding(28)
+        .adaptiveGlass(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .frame(maxWidth: .infinity, minHeight: 260)
     }
 

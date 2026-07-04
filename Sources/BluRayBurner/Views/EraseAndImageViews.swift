@@ -23,6 +23,7 @@ struct EraseView: View {
                     Button("Erase Disc", role: .destructive) {
                         app.eraseVM.erase(mode: mode)
                     }
+                    .adaptiveGlassProminentButton()
                 } else {
                     ContentUnavailableView(
                         "No rewritable disc",
@@ -38,13 +39,17 @@ struct EraseView: View {
             case .done:
                 Image(systemName: "checkmark.circle.fill").font(.system(size: 44)).foregroundStyle(.green)
                 Text("Disc erased").font(.headline)
-                Button("Done") { app.eraseVM.reset() }.keyboardShortcut(.defaultAction)
+                Button("Done") { app.eraseVM.reset() }
+                    .adaptiveGlassProminentButton()
+                    .keyboardShortcut(.defaultAction)
 
             case .failed(let error):
                 Image(systemName: "xmark.octagon.fill").font(.system(size: 44)).foregroundStyle(.red)
                 Text("Erase failed").font(.headline)
                 Text(String(describing: error)).foregroundStyle(.secondary)
-                Button("OK") { app.eraseVM.reset() }.keyboardShortcut(.defaultAction)
+                Button("OK") { app.eraseVM.reset() }
+                    .adaptiveGlassProminentButton()
+                    .keyboardShortcut(.defaultAction)
             }
         }
         .frame(maxWidth: .infinity, minHeight: 260)
@@ -81,6 +86,7 @@ struct ImageBurnView: View {
                         } label: {
                             Label("Burn Image", systemImage: "flame")
                         }
+                        .adaptiveGlassProminentButton()
                         .keyboardShortcut(.defaultAction)
                         .disabled(!app.imageVM.canBurn)
                     }

@@ -38,7 +38,7 @@ BRB_MOCK=1 "dist/Blu-Ray Burner.app/Contents/MacOS/BluRayBurner"  # UI demo with
 | `Sources/SandboxBurnSpike/` | U1 throwaway diagnostic app |
 | `Tests/BluRayBurnerCoreTests/` | Swift Testing suite (38 tests) |
 | `Packaging/` | Info.plists, entitlements (MAS/Direct/Spike±USB), `make-app.sh` |
-| `docs/` | Plan, release docs, physical-burn runbook |
+| `docs/` | Plan, release docs, physical-burn runbook, design references (`docs/design/liquid-glass.md`) |
 
 **Toolchain deviation from plan:** the plan named `BluRayBurner.xcodeproj`;
 this machine has no Xcode (CLT only), so the project is a Swift Package plus a

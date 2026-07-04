@@ -18,7 +18,8 @@ struct ContentView: View {
     }
 }
 
-/// Always-visible bar showing the current drive and media.
+/// Always-visible device status: a floating glass capsule (Liquid Glass
+/// chrome layer — see docs/design/liquid-glass.md), never full-width chrome.
 struct DeviceStatusBar: View {
     @Environment(AppModel.self) private var app
 
@@ -29,7 +30,7 @@ struct DeviceStatusBar: View {
             if let device = app.deviceMonitor.currentDevice {
                 Text(device.displayName)
                 if let media = device.media {
-                    Text("·")
+                    Text("·").foregroundStyle(.tertiary)
                     Text("\(media.type.rawValue), \(ByteFormat.string(media.capacityBytes))")
                         .foregroundStyle(.secondary)
                     if !media.isWritable {
@@ -41,12 +42,12 @@ struct DeviceStatusBar: View {
             } else {
                 Text("No optical drive connected").foregroundStyle(.secondary)
             }
-            Spacer()
         }
         .font(.callout)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(.bar)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 7)
+        .adaptiveGlass(in: Capsule())
+        .padding(.bottom, 8)
     }
 }
 

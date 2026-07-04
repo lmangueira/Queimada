@@ -64,6 +64,7 @@ struct CompileView: View {
         } label: {
             Label("Burn Disc", systemImage: "flame")
         }
+        .adaptiveGlassProminentButton()
         .keyboardShortcut(.defaultAction)
         .disabled(!app.compileVM.canBurn)
         .help(gateHelp)
