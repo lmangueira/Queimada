@@ -27,6 +27,13 @@ public struct CompilationItem: Sendable, Equatable, Identifiable {
         case .folder(let children): return children.reduce(0) { $0 + $1.sizeBytes }
         }
     }
+
+    /// Children for hierarchical UI (`OutlineGroup` contract):
+    /// non-nil for folders (empty array allowed), nil for files.
+    public var children: [CompilationItem]? {
+        if case .folder(let children) = kind { return children }
+        return nil
+    }
 }
 
 /// Capacity state of the assembled set vs. the target media (R12).
@@ -73,8 +80,24 @@ public struct Compilation: Sendable, Equatable {
         items.append(item)
     }
 
+    /// Removes an item anywhere in the tree — including a file *inside* a
+    /// dropped folder. Only the burn set changes; the file on disk is
+    /// untouched (the disc layout is virtual, KTD3). A folder emptied by
+    /// pruning stays in the set and burns as an empty folder.
     public mutating func remove(id: UUID) {
-        items.removeAll { $0.id == id }
+        items = Self.removing(id: id, from: items)
+    }
+
+    private static func removing(id: UUID, from items: [CompilationItem]) -> [CompilationItem] {
+        items.compactMap { item in
+            if item.id == id { return nil }
+            if case .folder(let children) = item.kind {
+                var updated = item
+                updated.kind = .folder(children: removing(id: id, from: children))
+                return updated
+            }
+            return item
+        }
     }
 
     /// Pure capacity check (R12): total vs. the target media's capacity.

@@ -105,6 +105,84 @@ func eventually(
         #expect(compilation.items.count == 1)
     }
 
+    @Test func removeFileNestedInsideFolderPrunesOnlyThatFile() {
+        // Tree-view pruning: removing a file inside a dropped folder excludes
+        // it from the burn set; siblings and the folder itself remain.
+        let doomed = makeFile("skip-me.tmp", size: 400)
+        let keep = makeFile("keep.dat", size: 100)
+        let sub = CompilationItem(
+            name: "sub",
+            sourceURL: URL(fileURLWithPath: "/src/folder/sub"),
+            kind: .folder(children: [doomed, keep])
+        )
+        let folder = CompilationItem(
+            name: "folder",
+            sourceURL: URL(fileURLWithPath: "/src/folder"),
+            kind: .folder(children: [sub, makeFile("top.txt", size: 10)])
+        )
+        var compilation = Compilation()
+        compilation.add(folder)
+        #expect(compilation.totalBytes == 510)
+
+        compilation.remove(id: doomed.id)
+
+        #expect(compilation.totalBytes == 110, "only the pruned file's size disappears")
+        #expect(compilation.items.count == 1, "folder still present")
+        let paths = Set(compilation.allSourceURLs.map(\.path))
+        #expect(!paths.contains("/src/skip-me.tmp"), "pruned file no longer referenced")
+        #expect(paths.contains("/src/keep.dat"), "sibling survives")
+    }
+
+    @Test func removeNestedSubfolderRemovesItsSubtree() {
+        let inner = makeFile("inner.dat", size: 30)
+        let sub = CompilationItem(
+            name: "sub",
+            sourceURL: URL(fileURLWithPath: "/src/f/sub"),
+            kind: .folder(children: [inner])
+        )
+        let folder = CompilationItem(
+            name: "f",
+            sourceURL: URL(fileURLWithPath: "/src/f"),
+            kind: .folder(children: [sub, makeFile("stay.txt", size: 5)])
+        )
+        var compilation = Compilation()
+        compilation.add(folder)
+
+        compilation.remove(id: sub.id)
+
+        #expect(compilation.totalBytes == 5)
+        guard case .folder(_, _) = FilesystemLayoutBuilder.makeLayout(from: compilation, mediaType: .bdR).root[0] else {
+            Issue.record("folder should remain in layout")
+            return
+        }
+    }
+
+    @Test func folderEmptiedByPruningStaysAsEmptyFolder() {
+        let only = makeFile("only.dat", size: 7)
+        let folder = CompilationItem(
+            name: "will-be-empty",
+            sourceURL: URL(fileURLWithPath: "/src/e"),
+            kind: .folder(children: [only])
+        )
+        var compilation = Compilation()
+        compilation.add(folder)
+        compilation.remove(id: only.id)
+
+        #expect(compilation.items.count == 1)
+        #expect(compilation.items[0].children?.isEmpty == true)
+        #expect(compilation.totalBytes == 0)
+    }
+
+    @Test func childrenAccessorFollowsOutlineContract() {
+        // OutlineGroup contract: folders → non-nil (empty ok), files → nil.
+        #expect(makeFile("f.bin", size: 1).children == nil)
+        let folder = CompilationItem(
+            name: "d", sourceURL: URL(fileURLWithPath: "/d"), kind: .folder(children: [])
+        )
+        #expect(folder.children != nil)
+        #expect(folder.children?.isEmpty == true)
+    }
+
     @Test func allSourceURLsCollectsNestedFiles() {
         // KTD3/KTD4: every URL the burn must hold access to.
         let inner = makeFile("inner.dat", size: 5)

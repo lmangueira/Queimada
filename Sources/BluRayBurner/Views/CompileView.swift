@@ -36,19 +36,12 @@ struct CompileView: View {
                     description: Text("Everything you drop is written exactly as-is — names, folders, and contents.")
                 )
             } else {
+                // Tree view: folders expand to show their contents, and any
+                // file or subfolder can be pruned from the burn set.
                 List {
-                    ForEach(app.compileVM.compilation.items) { item in
-                        HStack {
-                            Image(systemName: itemIcon(item))
-                            Text(item.name)
-                            Spacer()
-                            Text(ByteFormat.string(item.sizeBytes)).foregroundStyle(.secondary)
-                            Button(role: .destructive) {
-                                app.compileVM.remove(id: item.id)
-                            } label: {
-                                Image(systemName: "minus.circle.fill")
-                            }
-                            .buttonStyle(.plain)
+                    OutlineGroup(app.compileVM.compilation.items, children: \.children) { item in
+                        CompilationRow(item: item) {
+                            app.compileVM.remove(id: item.id)
                         }
                     }
                 }
@@ -64,10 +57,7 @@ struct CompileView: View {
         }
     }
 
-    private func itemIcon(_ item: CompilationItem) -> String {
-        if case .folder = item.kind { return "folder" }
-        return "doc"
-    }
+    // (row rendering lives in CompilationRow below)
 
     private var burnButton: some View {
         Button {
@@ -109,6 +99,43 @@ struct CompileView: View {
             }
         }
         return accepted
+    }
+}
+
+/// One row of the compilation tree: icon, name, size/child summary, and a
+/// remove control that prunes the item from the burn set only — nothing is
+/// deleted from disk.
+struct CompilationRow: View {
+    let item: CompilationItem
+    let onRemove: () -> Void
+
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundStyle(item.children != nil ? Color.accentColor : .secondary)
+            Text(item.name)
+            if let count = item.children?.count {
+                Text("\(count) item\(count == 1 ? "" : "s")")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            Spacer()
+            Text(ByteFormat.string(item.sizeBytes))
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+            Button(role: .destructive, action: onRemove) {
+                Image(systemName: "minus.circle.fill")
+            }
+            .buttonStyle(.plain)
+            .help("Remove from the burn set — the file on your disk is not touched.")
+        }
+    }
+
+    private var icon: String {
+        if let children = item.children {
+            return children.isEmpty ? "folder" : "folder.fill"
+        }
+        return "doc"
     }
 }
 
