@@ -1,0 +1,13 @@
+# Build artifacts
+.build/
+dist/
+.swiftpm/
+
+# Xcode (if ever used)
+xcuserdata/
+DerivedData/
+*.xcodeproj
+
+# Local tooling
+.claude/
+.DS_Store
