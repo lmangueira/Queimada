@@ -1,0 +1,1358 @@
+{
+  "version": "2.14",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "Frame",
+      "clip": true,
+      "width": 800,
+      "height": 600,
+      "fill": "#FFFFFF",
+      "layout": "none"
+    },
+    {
+      "type": "frame",
+      "id": "gy9Ac",
+      "x": 920,
+      "y": 0,
+      "name": "Window / Drag & Drop",
+      "clip": true,
+      "width": 1000,
+      "height": 660,
+      "fill": "$window-bg",
+      "cornerRadius": 12,
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "t02q0",
+          "name": "Titlebar",
+          "width": "fill_container",
+          "height": 52,
+          "fill": "#FFFFFF0A",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "FrZ0T",
+              "type": "ref",
+              "ref": "kbxeg",
+              "name": "Traffic Lights",
+              "layoutPosition": "absolute",
+              "x": 20,
+              "y": 20
+            },
+            {
+              "type": "text",
+              "id": "aJriW",
+              "name": "Window Title",
+              "fill": "$text-primary",
+              "content": "Blu-Ray Burner",
+              "fontFamily": "$font-ui",
+              "fontSize": 13,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "id": "qFeBc",
+          "name": "Titlebar Hairline",
+          "fill": "$separator",
+          "width": "fill_container",
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "BIwnt",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 14,
+          "padding": 20,
+          "children": [
+            {
+              "type": "frame",
+              "id": "OaVJJ",
+              "name": "Drop Zone",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "#FFFFFF08",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "gap": 10,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "path",
+                  "id": "scHA0",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "name": "Dashed Border",
+                  "geometry": "M16 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m8 0l10 0m7.7 2l6.7 7.1m1.6 7.8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l0 10m0 8l-1.9 9.7m-5.3 5.8l-9.5 2.6m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-10 0m-8 0l-9.6-2.3m-5.5-5.7l-2.2-9.6m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m0-8l0-10m1.3-7.8l6.6-7.4m7.6-2.2l0.5 0",
+                  "viewBox": [
+                    0,
+                    0,
+                    960,
+                    521
+                  ],
+                  "width": 960,
+                  "height": 521,
+                  "stroke": "#00BFFF59",
+                  "strokeWidth": 1.5,
+                  "strokeLinecap": "round"
+                },
+                {
+                  "type": "rectangle",
+                  "id": "F2WBz",
+                  "name": "Brand Mark",
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "images/queimada-flame-disc.png",
+                    "mode": "fit"
+                  },
+                  "width": 100,
+                  "height": 148
+                },
+                {
+                  "type": "text",
+                  "id": "ByysY",
+                  "name": "Headline",
+                  "fill": "$text-primary",
+                  "content": "Drag files, folders, or a disc image here",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 20,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "PmqOn",
+                  "name": "Caption",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 470,
+                  "content": "Files and folders are burned to a cross-platform data disc. A single .iso / .img / .dmg can be written as a disc, or added as a file.",
+                  "lineHeight": 1.45,
+                  "textAlign": "center",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "Lt2Wh",
+                  "name": "Button Wrap",
+                  "padding": [
+                    10,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vOTzO",
+                      "name": "Erase Button",
+                      "fill": "#A0522D2E",
+                      "cornerRadius": 6,
+                      "stroke": "#A0522D66",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#00000000"
+                      },
+                      "padding": [
+                        6,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "eYpQT",
+                          "name": "Erase Label",
+                          "fill": "#EDBB94",
+                          "content": "Erase a rewritable disc…",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "kfP9T",
+              "name": "Status Row",
+              "width": "fill_container",
+              "height": 32,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "GIH6O",
+                  "type": "ref",
+                  "ref": "X1xta",
+                  "name": "Drive Status"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "LsiNY",
+      "x": 2000,
+      "y": 0,
+      "name": "Window / Data Disc",
+      "clip": true,
+      "width": 1000,
+      "height": 660,
+      "fill": "$window-bg",
+      "cornerRadius": 12,
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "sYaPq",
+          "name": "Titlebar",
+          "width": "fill_container",
+          "height": 52,
+          "fill": "#FFFFFF0A",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "WYrZZ",
+              "type": "ref",
+              "ref": "kbxeg",
+              "name": "Traffic Lights",
+              "layoutPosition": "absolute",
+              "x": 20,
+              "y": 20
+            },
+            {
+              "type": "frame",
+              "id": "pmQtK",
+              "name": "Title Stack",
+              "layout": "vertical",
+              "gap": 1,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "lp9cr",
+                  "name": "Title",
+                  "fill": "$text-primary",
+                  "content": "Data Disc",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "O9GPn",
+                  "name": "Subtitle",
+                  "fill": "$text-tertiary",
+                  "content": "Blu-Ray Burner",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 10.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "id": "FvrpR",
+          "name": "Titlebar Hairline",
+          "fill": "$separator",
+          "width": "fill_container",
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "Wbzkk",
+          "name": "Body",
+          "width": "fill_container",
+          "height": "fill_container",
+          "children": [
+            {
+              "type": "frame",
+              "id": "O077Rc",
+              "name": "Sidebar",
+              "width": 230,
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 2,
+              "padding": [
+                12,
+                10
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "u8OUU",
+                  "name": "Source Label Wrap",
+                  "padding": [
+                    4,
+                    8,
+                    3,
+                    8
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "jJdoi",
+                      "name": "Source Label",
+                      "fill": "$text-tertiary",
+                      "content": "SOURCE",
+                      "fontFamily": "$font-ui",
+                      "fontSize": 10.5,
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Z6g8cS",
+                  "name": "Root Row",
+                  "width": "fill_container",
+                  "fill": "#00BFFF26",
+                  "cornerRadius": 6,
+                  "gap": 7,
+                  "padding": [
+                    6,
+                    8
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "SUgQm",
+                      "name": "Disc Icon",
+                      "width": 15,
+                      "height": 15,
+                      "icon": "disc",
+                      "library": "lucide",
+                      "fill": "$blue-flame"
+                    },
+                    {
+                      "type": "text",
+                      "id": "X6isha",
+                      "name": "Root Label",
+                      "fill": "$text-primary",
+                      "content": "Data Disc",
+                      "fontFamily": "$font-ui",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "rfsht",
+                  "name": "Tree Folder Row",
+                  "width": "fill_container",
+                  "cornerRadius": 6,
+                  "gap": 5,
+                  "padding": [
+                    5,
+                    8,
+                    5,
+                    18
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "nfGxf",
+                      "name": "Tree Chevron",
+                      "width": 12,
+                      "height": 12,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "axA6L",
+                      "name": "Tree Folder",
+                      "width": 15,
+                      "height": 15,
+                      "icon": "folder",
+                      "library": "lucide",
+                      "fill": "$gold-flame"
+                    },
+                    {
+                      "type": "text",
+                      "id": "AA5U0",
+                      "name": "Tree Label",
+                      "fill": "$text-primary",
+                      "content": "files_tails",
+                      "fontFamily": "$font-ui",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "neAQq",
+              "name": "Body Divider",
+              "fill": "$separator",
+              "width": 1,
+              "height": "fill_container"
+            },
+            {
+              "type": "frame",
+              "id": "kFbFk",
+              "name": "Panel",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "$panel-bg",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "eY0b0",
+                  "name": "Panel Header",
+                  "width": "fill_container",
+                  "padding": [
+                    14,
+                    20
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "MdxsK",
+                      "name": "Panel Title",
+                      "fill": "$text-primary",
+                      "content": "Data Disc",
+                      "fontFamily": "$font-ui",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zDMic",
+                      "name": "Hint",
+                      "fill": "$text-tertiary",
+                      "content": "Drops land here",
+                      "fontFamily": "$font-ui",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "xSXqN",
+                  "name": "Header Hairline",
+                  "fill": "$separator",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "HliIW",
+                  "name": "File List",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "HHGeV",
+                      "name": "Folder Row",
+                      "width": "fill_container",
+                      "cornerRadius": 8,
+                      "gap": 10,
+                      "padding": [
+                        8,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "CTUMk",
+                          "name": "Folder Icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "folder",
+                          "library": "lucide",
+                          "fill": "$gold-flame"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Rt9fX",
+                          "name": "Folder Meta",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "tvMYX",
+                              "name": "Folder Name",
+                              "fill": "$text-primary",
+                              "content": "files_tails",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "i8Ylu6",
+                              "name": "Item Count",
+                              "fill": "$text-secondary",
+                              "content": "5 items",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "jEWZi",
+                          "name": "Folder Size",
+                          "fill": "$text-secondary",
+                          "content": "87 KB",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "loo1I",
+                          "name": "Remove Button",
+                          "width": 20,
+                          "height": 20,
+                          "fill": "#A0522D",
+                          "cornerRadius": 10,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "vTM4e",
+                              "name": "Remove X",
+                              "width": 11,
+                              "height": 11,
+                              "icon": "x",
+                              "library": "lucide",
+                              "fill": "#FFF2E8"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "id": "MGoVg",
+          "name": "Capacity Hairline",
+          "fill": "$separator",
+          "width": "fill_container",
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "GTakB",
+          "name": "Capacity",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 6,
+          "padding": [
+            10,
+            20,
+            12,
+            20
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "s0h46h",
+              "name": "Capacity Track",
+              "clip": true,
+              "width": "fill_container",
+              "height": 6,
+              "fill": "#FFFFFF1A",
+              "cornerRadius": 3,
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "GaJoO",
+                  "name": "Capacity Used",
+                  "fill": "$blue-flame",
+                  "width": 5,
+                  "height": "fill_container"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "aDFu9",
+              "name": "Capacity Caption",
+              "fill": "$text-secondary",
+              "content": "87 KB used · 25,03 GB free",
+              "fontFamily": "$font-ui",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "id": "f2gInR",
+          "name": "Footer Hairline",
+          "fill": "$separator",
+          "width": "fill_container",
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "ADNCT",
+          "name": "Footer",
+          "width": "fill_container",
+          "height": 60,
+          "fill": "#FFFFFF0A",
+          "gap": 12,
+          "padding": [
+            0,
+            16
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "q5X9JX",
+              "name": "Footer Left",
+              "width": "fill_container",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NahtN",
+                  "name": "Start Over Button",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 180,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#00BFFF",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0077E6",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 9,
+                  "stroke": "#FFFFFF14",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00BFFF4D",
+                    "offset": {
+                      "x": 0,
+                      "y": 2
+                    },
+                    "blur": 6
+                  },
+                  "gap": 7,
+                  "padding": [
+                    11,
+                    18,
+                    11,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "PyMkt",
+                      "name": "Start Over Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-left",
+                      "library": "lucide",
+                      "fill": "#EAF7FF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JqETJ",
+                      "name": "Start Over Label",
+                      "fill": "#FFFFFF",
+                      "content": "Start Over",
+                      "fontFamily": "$font-ui",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "qEopr",
+              "type": "ref",
+              "ref": "X1xta",
+              "name": "Drive Status"
+            },
+            {
+              "type": "frame",
+              "id": "NxWbB",
+              "name": "Footer Right",
+              "width": "fill_container",
+              "gap": 22,
+              "justifyContent": "end",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "bG9uj",
+                  "name": "Verify Group",
+                  "gap": 8,
+                  "padding": [
+                    0,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Ku2aD",
+                      "name": "Checkbox",
+                      "width": 16,
+                      "height": 16,
+                      "fill": "$accent-blue",
+                      "cornerRadius": 4,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "s3VGpo",
+                          "name": "Check",
+                          "width": 11,
+                          "height": 11,
+                          "icon": "check",
+                          "library": "lucide",
+                          "fill": "#10281F"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "HsrGO",
+                      "name": "Verify Label",
+                      "fill": "$text-primary",
+                      "content": "Verify Disc",
+                      "fontFamily": "$font-ui",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "T4qpv",
+                  "name": "Burn Button",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 180,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#A33027",
+                        "position": 0
+                      },
+                      {
+                        "color": "#691A15",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 9,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#84221C66",
+                    "offset": {
+                      "x": 0,
+                      "y": 2
+                    },
+                    "blur": 6
+                  },
+                  "gap": 8,
+                  "padding": [
+                    11,
+                    22
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "IVSNx",
+                      "name": "Burn Flame",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "flame",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Wlkua",
+                      "name": "Burn Label",
+                      "fill": "#FFFFFF",
+                      "content": "Burn Disc",
+                      "fontFamily": "$font-ui",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "snpZ1",
+      "x": 920,
+      "y": 760,
+      "name": "Splash / Loading",
+      "clip": true,
+      "width": 460,
+      "height": 660,
+      "fill": "$dark-bg-deep",
+      "cornerRadius": 24,
+      "layout": "vertical",
+      "gap": 30,
+      "padding": 40,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "X0eik",
+          "name": "Logo Image",
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "images/queimada-logo-transparent.png",
+            "mode": "fit"
+          },
+          "width": 290,
+          "height": 420
+        },
+        {
+          "type": "frame",
+          "id": "lmnHs",
+          "name": "Loading Dots",
+          "gap": 10,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "ellipse",
+              "id": "q62Lb0",
+              "name": "Dot 1",
+              "fill": "$blue-flame",
+              "width": 9,
+              "height": 9
+            },
+            {
+              "type": "ellipse",
+              "id": "q0ZmX",
+              "name": "Dot 2",
+              "opacity": 0.55,
+              "fill": "$blue-flame",
+              "width": 9,
+              "height": 9
+            },
+            {
+              "type": "ellipse",
+              "id": "OScku",
+              "name": "Dot 3",
+              "opacity": 0.25,
+              "fill": "$blue-flame",
+              "width": 9,
+              "height": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "pvGM9",
+      "x": 1460,
+      "y": 760,
+      "name": "Splash / Burning Progress",
+      "clip": true,
+      "width": 460,
+      "height": 660,
+      "fill": "$dark-bg-deep",
+      "cornerRadius": 24,
+      "layout": "vertical",
+      "gap": 16,
+      "padding": [
+        20,
+        48
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "alr09",
+          "name": "Logo Image",
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "images/queimada-logo-transparent.png",
+            "mode": "fit"
+          },
+          "width": 280,
+          "height": 405
+        },
+        {
+          "type": "frame",
+          "id": "pTQ8B",
+          "name": "Progress Group",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 10,
+          "children": [
+            {
+              "type": "frame",
+              "id": "eCKzB",
+              "name": "Bar Zone",
+              "width": "fill_container",
+              "height": 92,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "IaMvR",
+                  "x": 0,
+                  "y": 2,
+                  "name": "Bar Graphic",
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "images/queimada-progress-bar.png",
+                    "mode": "fit"
+                  },
+                  "width": 364,
+                  "height": 88
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "zgPZy",
+              "name": "Status Row",
+              "width": "fill_container",
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "D8Ioe1",
+                  "name": "Status",
+                  "fill": "#E8F0F0",
+                  "content": "Burning disc…",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "SPOXa",
+                  "name": "Percent",
+                  "fill": "$blue-flame",
+                  "content": "62 %",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "euST6",
+              "name": "Detail",
+              "fill": "#8FA6A6",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "4,2 GB of 6,8 GB written · Verify after burn",
+              "textAlign": "center",
+              "fontFamily": "$font-ui",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Hn3p3",
+      "x": 2000,
+      "y": 760,
+      "name": "Logo / QUEIMADA (extracted)",
+      "clip": true,
+      "width": 460,
+      "height": 660,
+      "fill": "$dark-bg-deep",
+      "cornerRadius": 24,
+      "layout": "vertical",
+      "gap": 28,
+      "padding": 40,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "id": "cyuzY",
+          "type": "ref",
+          "ref": "Un9V9",
+          "name": "Logo Mark Instance",
+          "width": 300,
+          "height": 434
+        },
+        {
+          "type": "text",
+          "id": "u9Fnt",
+          "name": "Caption",
+          "fill": "#8FA6A6",
+          "content": "From your SVG — rendered with true transparency",
+          "fontFamily": "$font-ui",
+          "fontSize": 13,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "v8GzY",
+      "x": 2540,
+      "y": 760,
+      "name": "Logo / App Icon",
+      "clip": true,
+      "width": 460,
+      "height": 660,
+      "fill": "$dark-bg-deep",
+      "cornerRadius": 24,
+      "layout": "vertical",
+      "gap": 28,
+      "padding": 40,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "pLeFu",
+          "name": "App Icon Tile",
+          "width": 200,
+          "height": 200,
+          "fill": "$dark-bg",
+          "cornerRadius": 45,
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#00000066",
+            "offset": {
+              "x": 0,
+              "y": 10
+            },
+            "blur": 24
+          },
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "g1I3pM",
+              "name": "Mark",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "images/queimada-flame-disc.png",
+                "mode": "fit"
+              },
+              "width": 106,
+              "height": 156
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "R1Fnp",
+          "name": "Caption AI",
+          "fill": "#8FA6A6",
+          "content": "App icon — dark tile + vector mark",
+          "fontFamily": "$font-ui",
+          "fontSize": 13,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Un9V9",
+      "x": 920,
+      "y": -590,
+      "name": "Brand / QUEIMADA Logo",
+      "reusable": true,
+      "width": 297,
+      "height": 430,
+      "fill": "#00000000",
+      "layout": "none",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "iPVX4",
+          "x": 0,
+          "y": 0,
+          "name": "Logo Image",
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "images/queimada-logo-transparent.png",
+            "mode": "fit"
+          },
+          "width": 297,
+          "height": 430
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "N2Uw0",
+      "x": 920,
+      "y": -830,
+      "name": "Components",
+      "gap": 48,
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "kbxeg",
+          "name": "Traffic Lights",
+          "reusable": true,
+          "gap": 8,
+          "children": [
+            {
+              "type": "ellipse",
+              "id": "D24Wm7",
+              "name": "Close",
+              "fill": "#FF5F57",
+              "width": 12,
+              "height": 12,
+              "stroke": "#00000014",
+              "strokeWidth": 0.5
+            },
+            {
+              "type": "ellipse",
+              "id": "mrVRi",
+              "name": "Minimize",
+              "fill": "#FEBC2E",
+              "width": 12,
+              "height": 12,
+              "stroke": "#00000014",
+              "strokeWidth": 0.5
+            },
+            {
+              "type": "ellipse",
+              "id": "N7sMQ",
+              "name": "Zoom",
+              "fill": "#28C840",
+              "width": 12,
+              "height": 12,
+              "stroke": "#00000014",
+              "strokeWidth": 0.5
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "X1xta",
+          "name": "Drive Pill",
+          "reusable": true,
+          "fill": "#FFFFFF10",
+          "cornerRadius": 16,
+          "stroke": "$separator",
+          "strokeWidth": 1,
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#00000040",
+            "offset": {
+              "x": 0,
+              "y": 1
+            },
+            "blur": 2
+          },
+          "gap": 8,
+          "padding": [
+            7,
+            14
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "e69un",
+              "name": "Drive Icon",
+              "width": 15,
+              "height": 15,
+              "icon": "disc",
+              "library": "lucide",
+              "fill": "$gold-flame"
+            },
+            {
+              "type": "text",
+              "id": "aESml",
+              "name": "Drive Name",
+              "fill": "$text-primary",
+              "content": "Demo BD Writer (mock)",
+              "fontFamily": "$font-ui",
+              "fontSize": 12,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "csSsB",
+              "name": "Dot",
+              "fill": "$text-tertiary",
+              "content": "·",
+              "fontFamily": "$font-ui",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "haBU7",
+              "name": "Drive Spec",
+              "fill": "$text-secondary",
+              "content": "BD-R, 25,03 GB",
+              "fontFamily": "$font-ui",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "blue-flame": {
+      "type": "color",
+      "value": "#00BFFF"
+    },
+    "clay": {
+      "type": "color",
+      "value": "#A0522D"
+    },
+    "gold-flame": {
+      "type": "color",
+      "value": "#FFD700"
+    },
+    "dark-bg": {
+      "type": "color",
+      "value": "#2F4F4F"
+    },
+    "dark-bg-deep": {
+      "type": "color",
+      "value": "#1E2D2D"
+    },
+    "gold-wordmark": {
+      "type": "color",
+      "value": "#C9A24B"
+    },
+    "window-bg": {
+      "type": "color",
+      "value": "#263C3C"
+    },
+    "panel-bg": {
+      "type": "color",
+      "value": "#203232"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#F0F6F5"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#9FB6B4"
+    },
+    "text-tertiary": {
+      "type": "color",
+      "value": "#6E8886"
+    },
+    "separator": {
+      "type": "color",
+      "value": "#FFFFFF14"
+    },
+    "accent-blue": {
+      "type": "color",
+      "value": "#00BFFF"
+    },
+    "font-ui": {
+      "type": "string",
+      "value": "Inter"
+    },
+    "font-brand": {
+      "type": "string",
+      "value": "Josefin Sans"
+    }
+  },
+  "fileToken": "f6fe98a3-d30e-403f-aa9e-9f708679e352"
+}
