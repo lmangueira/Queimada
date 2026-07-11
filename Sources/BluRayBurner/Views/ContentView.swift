@@ -3,30 +3,41 @@ import BluRayBurnerCore
 
 struct ContentView: View {
     @Environment(AppModel.self) private var app
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(spacing: 0) {
             titlebar
             Hairline()
 
-            Group {
+            ZStack {
                 switch app.screen {
-                case .welcome: WelcomeView()
-                case .compile: CompileView()
-                case .imageBurn: ImageBurnView()
-                case .erase: EraseView()
+                case .welcome: WelcomeView().transition(hubTransition)
+                case .compile: CompileView().transition(workflowTransition)
+                case .imageBurn: ImageBurnView().transition(workflowTransition)
+                case .erase: EraseView().transition(workflowTransition)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
 
             if app.screen != .welcome {
                 Hairline()
                 footer
+                    .transition(reduceMotion ? .opacity : Theme.Motion.footer)
             }
         }
         .background(Theme.windowBg)
-        .animation(.default, value: app.screen)
+        .animation(Theme.Motion.screen, value: app.screen)
         .task { await SnapshotDriver.runIfRequested(app: app) }
+    }
+
+    private var hubTransition: AnyTransition {
+        reduceMotion ? .opacity : Theme.Motion.hubScreen
+    }
+
+    private var workflowTransition: AnyTransition {
+        reduceMotion ? .opacity : Theme.Motion.workflowScreen
     }
 
     /// Custom titlebar (the system one is hidden): centered title with the

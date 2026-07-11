@@ -50,6 +50,21 @@ extension Color {
     }
 }
 
+// MARK: - Motion
+
+extension Theme {
+    /// Screen-navigation motion. The flow has a fixed spatial order — welcome
+    /// is the hub on the left, workflows live to its right — so each screen's
+    /// transition is static and direction stays correct for push and pop.
+    enum Motion {
+        static let screen = Animation.easeOut(duration: 0.35)
+
+        static let hubScreen = AnyTransition.offset(x: -28).combined(with: .opacity)
+        static let workflowScreen = AnyTransition.offset(x: 28).combined(with: .opacity)
+        static let footer = AnyTransition.offset(y: 12).combined(with: .opacity)
+    }
+}
+
 // MARK: - Buttons
 
 /// Filled gradient action button (Start Over, Burn Disc, Done).

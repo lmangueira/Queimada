@@ -129,28 +129,17 @@ struct DiscTreeSplitView: View {
         }
     }
 
-    // Sidebar: the disc root + folders-only tree.
+    // Sidebar: the disc root + folders-only tree. The tree renders as a flat
+    // depth-first list inside a LazyVStack so huge compilations only build
+    // and lay out the visible rows (critical during screen transitions).
     private var sidebar: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("SOURCE")
-                    .font(.system(size: 10.5, weight: .semibold))
-                    .kerning(0.6)
-                    .foregroundStyle(Theme.textTertiary)
-                    .padding(.init(top: 4, leading: 8, bottom: 3, trailing: 8))
-
-                SidebarRow(
-                    icon: "opticaldisc",
-                    iconColor: Theme.accent,
-                    label: app.compileVM.compilation.volumeName,
-                    emphasized: true,
-                    selected: app.compileVM.effectiveSelection == CompileViewModel.rootID,
-                    indent: 0
-                ) {
-                    app.compileVM.selectedFolderID = CompileViewModel.rootID
+            LazyVStack(alignment: .leading, spacing: 2) {
+                sidebarHeader
+                rootRow
+                ForEach(app.compileVM.folderRows) { row in
+                    folderRow(row)
                 }
-
-                folderRows(app.compileVM.folderTree, depth: 0)
             }
             .padding(.init(top: 12, leading: 10, bottom: 12, trailing: 10))
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -159,22 +148,37 @@ struct DiscTreeSplitView: View {
         .background(Theme.windowBg)
     }
 
-    @ViewBuilder
-    private func folderRows(_ nodes: [FolderNode], depth: Int) -> some View {
-        ForEach(nodes) { node in
-            SidebarRow(
-                icon: "folder.fill",
-                iconColor: Theme.gold,
-                label: node.name,
-                emphasized: false,
-                selected: app.compileVM.effectiveSelection == node.id,
-                indent: depth + 1
-            ) {
-                app.compileVM.selectedFolderID = node.id
-            }
-            if let children = node.children {
-                AnyView(folderRows(children, depth: depth + 1))
-            }
+    private var sidebarHeader: some View {
+        Text("SOURCE")
+            .font(.system(size: 10.5, weight: .semibold))
+            .kerning(0.6)
+            .foregroundStyle(Theme.textTertiary)
+            .padding(.init(top: 4, leading: 8, bottom: 3, trailing: 8))
+    }
+
+    private var rootRow: some View {
+        SidebarRow(
+            icon: "opticaldisc",
+            iconColor: Theme.accent,
+            label: app.compileVM.compilation.volumeName,
+            emphasized: true,
+            selected: app.compileVM.effectiveSelection == CompileViewModel.rootID,
+            indent: 0
+        ) {
+            app.compileVM.selectedFolderID = CompileViewModel.rootID
+        }
+    }
+
+    private func folderRow(_ row: FolderRow) -> some View {
+        SidebarRow(
+            icon: "folder.fill",
+            iconColor: Theme.gold,
+            label: row.name,
+            emphasized: false,
+            selected: app.compileVM.effectiveSelection == row.id,
+            indent: row.depth + 1
+        ) {
+            app.compileVM.selectedFolderID = row.id
         }
     }
 

@@ -24,6 +24,19 @@ public struct FolderNode: Sendable, Equatable, Identifiable {
     }
 }
 
+/// One row of the flattened sidebar tree (depth-first order).
+public struct FolderRow: Sendable, Equatable, Identifiable {
+    public var id: UUID
+    public var name: String
+    public var depth: Int
+
+    public init(id: UUID, name: String, depth: Int) {
+        self.id = id
+        self.name = name
+        self.depth = depth
+    }
+}
+
 /// Drives the main compile screen: drop, remove, capacity, options (U5).
 @MainActor
 @Observable
@@ -57,6 +70,21 @@ public final class CompileViewModel {
     /// Sidebar tree: folders only, disc root excluded (rendered separately).
     public var folderTree: [FolderNode] {
         Self.folderNodes(from: compilation.items)
+    }
+
+    /// Sidebar rows: the folder tree flattened depth-first. Flat so the view
+    /// can render it lazily — a nested tree defeats LazyVStack, because each
+    /// root's entire subtree materializes as a single lazy element.
+    public var folderRows: [FolderRow] {
+        var rows: [FolderRow] = []
+        func walk(_ nodes: [FolderNode], depth: Int) {
+            for node in nodes {
+                rows.append(FolderRow(id: node.id, name: node.name, depth: depth))
+                if let children = node.children { walk(children, depth: depth + 1) }
+            }
+        }
+        walk(folderTree, depth: 0)
+        return rows
     }
 
     /// Contents of the selected folder for the right-hand pane.
