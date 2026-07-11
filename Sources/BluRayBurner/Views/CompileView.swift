@@ -54,7 +54,9 @@ struct CompileView: View {
         }
     }
 
-    /// Resolve dropped file URLs and add them (folders enumerated recursively).
+    /// Resolve dropped file URLs and add them (folders enumerated recursively
+    /// off the main thread via AppModel.addDataItems, so large drops don't
+    /// freeze the UI).
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
         var accepted = false
         for provider in providers where provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
@@ -62,9 +64,7 @@ struct CompileView: View {
             _ = provider.loadObject(ofClass: URL.self) { url, _ in
                 guard let url else { return }
                 Task { @MainActor in
-                    if let item = CompilationItemFactory.make(from: url) {
-                        app.compileVM.add(item)
-                    }
+                    app.addDataItems(urls: [url])
                 }
             }
         }

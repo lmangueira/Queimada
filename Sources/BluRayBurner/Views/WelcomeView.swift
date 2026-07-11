@@ -12,7 +12,7 @@ struct WelcomeView: View {
     var body: some View {
         @Bindable var appModel = app
 
-        VStack(spacing: 14) {
+        VStack(spacing: 0) {
             VStack(spacing: 10) {
                 if let mark = Theme.brandMark {
                     mark
@@ -50,11 +50,22 @@ struct WelcomeView: View {
             .onDrop(of: [UTType.fileURL], isTargeted: $dropTargeted) { providers in
                 handleDrop(providers)
             }
+            .padding(20)
 
-            DriveStatusPill()
-                .frame(height: 32)
+            // Footer bar mirrors the treeview footer exactly — same Hairline +
+            // 60pt chrome, and the same three-section scaffold (two symmetric
+            // maxWidth-infinity flanks around the pill with 16pt side padding)
+            // so the drive pill lands in the identical spot on both screens.
+            Hairline()
+            HStack(spacing: 12) {
+                Color.clear.frame(maxWidth: .infinity)
+                DriveStatusPill()
+                Color.clear.frame(maxWidth: .infinity)
+            }
+            .padding(.horizontal, 16)
+            .frame(height: 60)
+            .background(Theme.chromeTint)
         }
-        .padding(20)
         .confirmationDialog(
             "“\(app.pendingImageURL?.lastPathComponent ?? "")” is a disc image",
             isPresented: Binding(

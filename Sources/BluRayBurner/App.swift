@@ -52,8 +52,11 @@ final class AppModel {
         case .askImageOrData(let imageURL):
             pendingImageURL = imageURL
         case .dataItems(let urls):
-            addDataItems(urls: urls)
+            // Navigate first so the transition animates immediately, then
+            // enumerate off the main thread — a large folder must never block
+            // the UI (which froze the welcome → compile slide).
             screen = .compile
+            addDataItems(urls: urls)
         case nil:
             break
         }
@@ -75,9 +78,15 @@ final class AppModel {
         screen = .compile
     }
 
+    /// Enumerate dropped URLs off the main thread (recursive folder walks can
+    /// take seconds for large trees) and add the resulting items on the main
+    /// actor. Keeps drops — and the screen transition they trigger — smooth.
     func addDataItems(urls: [URL]) {
-        for url in urls {
-            if let item = CompilationItemFactory.make(from: url) {
+        Task {
+            let items = await Task.detached(priority: .userInitiated) {
+                urls.compactMap { CompilationItemFactory.make(from: $0) }
+            }.value
+            for item in items {
                 compileVM.add(item)
             }
         }
