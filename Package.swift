@@ -15,6 +15,7 @@ let package = Package(
         .executableTarget(
             name: "BluRayBurner",
             dependencies: ["BluRayBurnerCore"],
+            resources: [.copy("Resources/queimada-flame-disc.png")],
             swiftSettings: [.swiftLanguageMode(.v5)],
             linkerSettings: [.linkedFramework("DiscRecording")]
         ),

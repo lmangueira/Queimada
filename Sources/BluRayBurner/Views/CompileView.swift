@@ -3,24 +3,19 @@ import UniformTypeIdentifiers
 import BluRayBurnerCore
 
 /// Main screen: drag files in, watch capacity, burn (U5).
+/// Chrome (titlebar/footer) is owned by ContentView; this view fills the
+/// body edge-to-edge per the design (sidebar | panel, capacity strip below).
 struct CompileView: View {
     @Environment(AppModel.self) private var app
     @State private var dropTargeted = false
 
     var body: some View {
-        @Bindable var compileVM = app.compileVM
-
-        VStack(spacing: 12) {
+        VStack(spacing: 0) {
             if case .idle = app.burnVM.state {
                 compileArea
+                Hairline()
                 CapacityBar(state: app.compileVM.capacityState, totalBytes: app.compileVM.compilation.totalBytes)
-
-                HStack {
-                    Toggle("Verify after burn", isOn: $compileVM.verifyAfterBurn)
-                        .help("Read the disc back after writing and compare against the source (recommended for archival).")
-                    Spacer()
-                    burnButton
-                }
+                    .padding(.init(top: 10, leading: 20, bottom: 12, trailing: 20))
             } else {
                 BurnProgressView()
             }
@@ -30,53 +25,32 @@ struct CompileView: View {
     private var compileArea: some View {
         Group {
             if app.compileVM.compilation.isEmpty {
-                ContentUnavailableView(
-                    "Drag files or folders here",
-                    systemImage: "square.and.arrow.down.on.square",
-                    description: Text("Everything you drop is written exactly as-is — names, folders, and contents.")
-                )
+                VStack(spacing: 10) {
+                    Image(systemName: "square.and.arrow.down.on.square")
+                        .font(.system(size: 40, weight: .light))
+                        .foregroundStyle(dropTargeted ? Theme.accent : Theme.textSecondary)
+                    Text("Drag files or folders here")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("Everything you drop is written exactly as-is — names, folders, and contents.")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 // Disc overview: virtual folder tree (sidebar) + contents of
                 // the selected folder (detail) — how the disc will look.
                 DiscTreeSplitView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .frame(maxWidth: .infinity, minHeight: 280, maxHeight: .infinity)
-        .background(RoundedRectangle(cornerRadius: 8).strokeBorder(
-            dropTargeted ? Color.accentColor : Color.secondary.opacity(0.3),
-            style: StrokeStyle(lineWidth: 2, dash: [6])
-        ))
+        .overlay(
+            Rectangle()
+                .strokeBorder(Theme.accent, lineWidth: 2)
+                .opacity(dropTargeted ? 1 : 0)
+        )
         .onDrop(of: [UTType.fileURL], isTargeted: $dropTargeted) { providers in
             handleDrop(providers)
-        }
-    }
-
-    // (row rendering lives in CompilationRow below)
-
-    private var burnButton: some View {
-        Button {
-            guard let device = app.deviceMonitor.currentDevice else { return }
-            app.burnVM.startBurn(
-                compilation: app.compileVM.compilation,
-                device: device,
-                verifyAfterBurn: app.compileVM.verifyAfterBurn
-            )
-        } label: {
-            Label("Burn Disc", systemImage: "flame")
-        }
-        .adaptiveGlassProminentButton()
-        .keyboardShortcut(.defaultAction)
-        .disabled(!app.compileVM.canBurn)
-        .help(gateHelp)
-    }
-
-    private var gateHelp: String {
-        switch app.compileVM.burnGate {
-        case .ready: return "Write the assembled files to disc."
-        case .emptyCompilation: return "Add files first."
-        case .noWritableMedia: return "Insert a writable disc."
-        case .overCapacity(let overBy): return "Set exceeds disc capacity by \(ByteFormat.string(overBy)). Remove some files."
         }
     }
 
@@ -98,69 +72,144 @@ struct CompileView: View {
     }
 }
 
+/// Footer controls for the compile screen (rendered inside ContentView's
+/// footer bar): verify checkbox + the Burn button.
+struct CompileFooterControls: View {
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        @Bindable var compileVM = app.compileVM
+
+        if case .idle = app.burnVM.state {
+            Toggle("Verify Disc", isOn: $compileVM.verifyAfterBurn)
+                .toggleStyle(QueimadaCheckboxStyle())
+                .help("Read the disc back after writing and compare against the source (recommended for archival).")
+
+            Button {
+                guard let device = app.deviceMonitor.currentDevice else { return }
+                app.burnVM.startBurn(
+                    compilation: app.compileVM.compilation,
+                    device: device,
+                    verifyAfterBurn: app.compileVM.verifyAfterBurn
+                )
+            } label: {
+                Label("Burn Disc", systemImage: "flame")
+            }
+            .buttonStyle(GradientButtonStyle(
+                gradient: Theme.burnGradient,
+                shadow: Color(hex: 0x84221C).opacity(0.4)
+            ))
+            .keyboardShortcut(.defaultAction)
+            .disabled(!app.compileVM.canBurn)
+            .help(gateHelp)
+        }
+    }
+
+    private var gateHelp: String {
+        switch app.compileVM.burnGate {
+        case .ready: return "Write the assembled files to disc."
+        case .emptyCompilation: return "Add files first."
+        case .noWritableMedia: return "Insert a writable disc."
+        case .overCapacity(let overBy): return "Set exceeds disc capacity by \(ByteFormat.string(overBy)). Remove some files."
+        }
+    }
+}
+
 /// Split disc overview: virtual folders on the left, selected folder's
 /// contents on the right. Drops land in the selected folder.
 struct DiscTreeSplitView: View {
     @Environment(AppModel.self) private var app
 
     var body: some View {
-        // List selection requires an optional binding; nil snaps to root.
-        let selection = Binding<UUID?>(
-            get: { app.compileVM.selectedFolderID },
-            set: { app.compileVM.selectedFolderID = $0 ?? CompileViewModel.rootID }
-        )
-
         HSplitView {
-            // Sidebar: the disc root + folders-only tree.
-            List(selection: selection) {
-                Label {
-                    Text(app.compileVM.compilation.volumeName)
-                        .fontWeight(.semibold)
-                } icon: {
-                    Image(systemName: "opticaldisc")
-                }
-                .tag(Optional(CompileViewModel.rootID))
+            sidebar
+                .frame(minWidth: 170, idealWidth: 230, maxWidth: 320)
+            detail
+                .frame(minWidth: 260, maxWidth: .infinity)
+        }
+    }
 
-                OutlineGroup(app.compileVM.folderTree, children: \.children) { node in
-                    Label(node.name, systemImage: "folder")
-                        .tag(Optional(node.id))
+    // Sidebar: the disc root + folders-only tree.
+    private var sidebar: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("SOURCE")
+                    .font(.system(size: 10.5, weight: .semibold))
+                    .kerning(0.6)
+                    .foregroundStyle(Theme.textTertiary)
+                    .padding(.init(top: 4, leading: 8, bottom: 3, trailing: 8))
+
+                SidebarRow(
+                    icon: "opticaldisc",
+                    iconColor: Theme.accent,
+                    label: app.compileVM.compilation.volumeName,
+                    emphasized: true,
+                    selected: app.compileVM.effectiveSelection == CompileViewModel.rootID,
+                    indent: 0
+                ) {
+                    app.compileVM.selectedFolderID = CompileViewModel.rootID
                 }
+
+                folderRows(app.compileVM.folderTree, depth: 0)
             }
-            .listStyle(.sidebar)
-            .frame(minWidth: 150, idealWidth: 190, maxWidth: 320)
+            .padding(.init(top: 12, leading: 10, bottom: 12, trailing: 10))
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxHeight: .infinity)
+        .background(Theme.windowBg)
+    }
 
-            // Detail: contents of the selected folder.
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Image(systemName: app.compileVM.effectiveSelection == CompileViewModel.rootID
-                          ? "opticaldisc" : "folder.fill")
-                        .foregroundStyle(.secondary)
-                    Text(app.compileVM.selectedFolderName).font(.headline)
-                    Spacer()
-                    Text("Drops land here")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+    @ViewBuilder
+    private func folderRows(_ nodes: [FolderNode], depth: Int) -> some View {
+        ForEach(nodes) { node in
+            SidebarRow(
+                icon: "folder.fill",
+                iconColor: Theme.gold,
+                label: node.name,
+                emphasized: false,
+                selected: app.compileVM.effectiveSelection == node.id,
+                indent: depth + 1
+            ) {
+                app.compileVM.selectedFolderID = node.id
+            }
+            if let children = node.children {
+                AnyView(folderRows(children, depth: depth + 1))
+            }
+        }
+    }
+
+    // Detail: contents of the selected folder.
+    private var detail: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text(app.compileVM.selectedFolderName)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer()
+                Text("Drops land here")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .padding(.init(top: 14, leading: 20, bottom: 14, trailing: 20))
+            Hairline()
+
+            if app.compileVM.visibleItems.isEmpty {
+                // Compact empty state — a folder pane, not a full-screen
+                // placeholder.
+                VStack(spacing: 6) {
+                    Image(systemName: "folder")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Theme.textTertiary)
+                    Text("Drop files here to add them to “\(app.compileVM.selectedFolderName)”.")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Theme.textSecondary)
+                        .multilineTextAlignment(.center)
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                Divider()
-
-                if app.compileVM.visibleItems.isEmpty {
-                    // Compact empty state — a folder pane, not a full-screen
-                    // placeholder.
-                    VStack(spacing: 6) {
-                        Image(systemName: "folder")
-                            .font(.system(size: 24))
-                            .foregroundStyle(.tertiary)
-                        Text("Drop files here to add them to “\(app.compileVM.selectedFolderName)”.")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding()
-                } else {
-                    List {
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding()
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 2) {
                         ForEach(app.compileVM.visibleItems) { item in
                             CompilationRow(item: item) {
                                 app.compileVM.remove(id: item.id)
@@ -174,10 +223,47 @@ struct DiscTreeSplitView: View {
                             }
                         }
                     }
+                    .padding(.init(top: 10, leading: 12, bottom: 10, trailing: 12))
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(minWidth: 260, maxWidth: .infinity)
         }
+        .background(Theme.panelBg)
+    }
+}
+
+/// One sidebar row: selection tint per the design (cyan wash + rounded 6).
+private struct SidebarRow: View {
+    let icon: String
+    let iconColor: Color
+    let label: String
+    let emphasized: Bool
+    let selected: Bool
+    let indent: Int
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 7) {
+                Image(systemName: icon)
+                    .font(.system(size: 12))
+                    .foregroundStyle(iconColor)
+                Text(label)
+                    .font(.system(size: 13, weight: emphasized ? .medium : .regular))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, 6)
+            .padding(.leading, 8 + CGFloat(indent) * 10)
+            .padding(.trailing, 8)
+            .background(
+                selected ? Theme.accent.opacity(0.15) : Color.clear,
+                in: RoundedRectangle(cornerRadius: 6, style: .continuous)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -189,25 +275,41 @@ struct CompilationRow: View {
     let onRemove: () -> Void
 
     var body: some View {
-        HStack {
+        HStack(spacing: 10) {
             Image(systemName: icon)
-                .foregroundStyle(item.children != nil ? Color.accentColor : .secondary)
-            Text(item.name)
-            if let count = item.children?.count {
-                Text("\(count) item\(count == 1 ? "" : "s")")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                .font(.system(size: 17))
+                .foregroundStyle(item.children != nil ? Theme.gold : Theme.textSecondary)
+                .frame(width: 22)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(item.name)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Theme.textPrimary)
+                if let count = item.children?.count {
+                    Text("\(count) item\(count == 1 ? "" : "s")")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.textSecondary)
+                }
             }
             Spacer()
             Text(ByteFormat.string(item.sizeBytes))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.textSecondary)
                 .monospacedDigit()
             Button(role: .destructive, action: onRemove) {
-                Image(systemName: "minus.circle.fill")
+                Circle()
+                    .fill(Theme.clay)
+                    .overlay(
+                        Image(systemName: "xmark")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundStyle(Color(hex: 0xFFF2E8))
+                    )
+                    .frame(width: 20, height: 20)
             }
             .buttonStyle(.plain)
             .help("Remove from the burn set — the file on your disk is not touched.")
         }
+        .padding(.init(top: 8, leading: 10, bottom: 8, trailing: 10))
+        .background(Color.clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
     private var icon: String {
@@ -245,17 +347,19 @@ struct CapacityBar: View {
     let totalBytes: Int64
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(spacing: 6) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4).fill(Color.secondary.opacity(0.2))
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: 3).fill(Color.white.opacity(0.1))
+                    RoundedRectangle(cornerRadius: 3)
                         .fill(barColor)
-                        .frame(width: geo.size.width * fillFraction)
+                        .frame(width: max(geo.size.width * fillFraction, totalBytes > 0 ? 5 : 0))
                 }
             }
-            .frame(height: 8)
-            Text(label).font(.caption).foregroundStyle(.secondary)
+            .frame(height: 6)
+            Text(label)
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textSecondary)
         }
     }
 
@@ -274,7 +378,7 @@ struct CapacityBar: View {
         switch state {
         case .overCapacity: return .red
         case .exact: return .orange
-        case .underCapacity, .noMedia: return .accentColor
+        case .underCapacity, .noMedia: return Theme.accent
         }
     }
 

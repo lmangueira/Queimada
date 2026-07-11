@@ -6,37 +6,81 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Back affordance for every screen past welcome (hidden mid-burn:
-            // startOver() refuses while a burn/erase is running anyway).
-            if app.screen != .welcome {
-                HStack {
-                    Button {
-                        app.startOver()
-                    } label: {
-                        Label("Start Over", systemImage: "chevron.backward")
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
-                    .disabled(!canGoBack)
-                    Spacer()
-                    Text(screenTitle).font(.headline).foregroundStyle(.secondary)
-                    Spacer()
-                    // Balance the leading button so the title stays centered.
-                    Label("Start Over", systemImage: "chevron.backward").hidden()
-                }
-                .padding(.bottom, 8)
-            }
+            titlebar
+            Hairline()
 
-            switch app.screen {
-            case .welcome: WelcomeView()
-            case .compile: CompileView()
-            case .imageBurn: ImageBurnView()
-            case .erase: EraseView()
+            Group {
+                switch app.screen {
+                case .welcome: WelcomeView()
+                case .compile: CompileView()
+                case .imageBurn: ImageBurnView()
+                case .erase: EraseView()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if app.screen != .welcome {
+                Hairline()
+                footer
             }
         }
-        .padding()
-        .overlay(alignment: .bottom) { DeviceStatusBar() }
+        .background(Theme.windowBg)
         .animation(.default, value: app.screen)
+        .task { await SnapshotDriver.runIfRequested(app: app) }
+    }
+
+    /// Custom titlebar (the system one is hidden): centered title with the
+    /// app name as subtitle past the welcome screen. Draggable like a real
+    /// titlebar; traffic lights overlay the leading edge.
+    private var titlebar: some View {
+        VStack(spacing: 1) {
+            Text(screenTitle)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.textPrimary)
+            if app.screen != .welcome {
+                Text("Blu-Ray Burner")
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 52)
+        .background(Theme.chromeTint)
+        .contentShape(Rectangle())
+        .gesture(WindowDragGesture())
+    }
+
+    /// Footer bar: Start Over on the left, drive status centered, and the
+    /// screen's primary controls (e.g. Verify + Burn) on the right.
+    private var footer: some View {
+        HStack(spacing: 12) {
+            HStack {
+                Button {
+                    app.startOver()
+                } label: {
+                    Label("Start Over", systemImage: "chevron.backward")
+                }
+                .buttonStyle(GradientButtonStyle())
+                .disabled(!canGoBack)
+                .opacity(canGoBack ? 1 : 0.4)
+                Spacer()
+            }
+            .frame(maxWidth: .infinity)
+
+            DriveStatusPill()
+
+            HStack(spacing: 22) {
+                Spacer()
+                switch app.screen {
+                case .compile: CompileFooterControls()
+                default: EmptyView()
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 60)
+        .background(Theme.chromeTint)
     }
 
     private var canGoBack: Bool {
@@ -49,7 +93,7 @@ struct ContentView: View {
 
     private var screenTitle: String {
         switch app.screen {
-        case .welcome: return ""
+        case .welcome: return "Blu-Ray Burner"
         case .compile: return "Data Disc"
         case .imageBurn: return "Write Disc Image"
         case .erase: return "Erase Disc"
@@ -57,36 +101,40 @@ struct ContentView: View {
     }
 }
 
-/// Always-visible device status: a floating glass capsule (Liquid Glass
-/// chrome layer — see docs/design/liquid-glass.md), never full-width chrome.
-struct DeviceStatusBar: View {
+/// Always-visible device status pill (design: Drive Pill component).
+struct DriveStatusPill: View {
     @Environment(AppModel.self) private var app
 
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: app.deviceMonitor.currentMedia == nil ? "opticaldiscdrive" : "opticaldiscdrive.fill")
-                .foregroundStyle(.secondary)
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.gold)
             if let device = app.deviceMonitor.currentDevice {
                 Text(device.displayName)
+                    .foregroundStyle(Theme.textPrimary)
+                    .fontWeight(.medium)
                 if let media = device.media {
-                    Text("·").foregroundStyle(.tertiary)
+                    Text("·").foregroundStyle(Theme.textTertiary)
                     Text("\(media.type.rawValue), \(ByteFormat.string(media.capacityBytes))")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.textSecondary)
                     if !media.isWritable {
                         Text("(not writable)").foregroundStyle(.orange)
                     }
                 } else {
-                    Text("· no disc").foregroundStyle(.secondary)
+                    Text("· no disc").foregroundStyle(Theme.textSecondary)
                 }
             } else {
-                Text("No optical drive connected").foregroundStyle(.secondary)
+                Text("No optical drive connected").foregroundStyle(Theme.textSecondary)
             }
         }
-        .font(.callout)
+        .font(.system(size: 12))
         .padding(.horizontal, 14)
         .padding(.vertical, 7)
-        .adaptiveGlass(in: Capsule())
-        .padding(.bottom, 8)
+        .background(Color.white.opacity(0.06), in: Capsule())
+        .overlay(Capsule().strokeBorder(Theme.hairline, lineWidth: 1))
+        .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+        .fixedSize()
     }
 }
 

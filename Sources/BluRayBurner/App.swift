@@ -10,7 +10,9 @@ struct BluRayBurnerApp: App {
             ContentView()
                 .environment(appModel)
                 .frame(minWidth: 560, minHeight: 460)
+                .preferredColorScheme(.dark)
         }
+        .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
     }
 }

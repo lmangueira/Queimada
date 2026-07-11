@@ -12,36 +12,49 @@ struct WelcomeView: View {
     var body: some View {
         @Bindable var appModel = app
 
-        VStack(spacing: 20) {
-            VStack(spacing: 14) {
-                Image(systemName: "opticaldisc")
-                    .font(.system(size: 56, weight: .light))
-                    .foregroundStyle(dropTargeted ? Color.accentColor : .secondary)
+        VStack(spacing: 14) {
+            VStack(spacing: 10) {
+                if let mark = Theme.brandMark {
+                    mark
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 148)
+                } else {
+                    Image(systemName: "opticaldisc")
+                        .font(.system(size: 56, weight: .light))
+                        .foregroundStyle(dropTargeted ? Theme.accent : Theme.textSecondary)
+                }
                 Text("Drag files, folders, or a disc image here")
-                    .font(.title3.weight(.medium))
-                Text("Files and folders are burned to a cross-platform data disc.\nA single .iso / .img / .dmg can be written as a disc, or added as a file.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("Files and folders are burned to a cross-platform data disc. A single .iso / .img / .dmg can be written as a disc, or added as a file.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineSpacing(3)
                     .multilineTextAlignment(.center)
+                    .frame(maxWidth: 470)
+
+                Button("Erase a rewritable disc…") {
+                    app.screen = .erase
+                }
+                .buttonStyle(ClayButtonStyle())
+                .padding(.top, 10)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(
-                dropTargeted ? Color.accentColor : Color.secondary.opacity(0.3),
-                style: StrokeStyle(lineWidth: 2, dash: [7])
+            .background(Theme.insetTint, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(
+                dropTargeted ? Theme.accent : Theme.accent.opacity(0.35),
+                style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [6, 7])
             ))
             .contentShape(Rectangle())
             .onDrop(of: [UTType.fileURL], isTargeted: $dropTargeted) { providers in
                 handleDrop(providers)
             }
 
-            Button {
-                app.screen = .erase
-            } label: {
-                Label("Erase a rewritable disc…", systemImage: "eraser")
-            }
-            .adaptiveGlassButton()
+            DriveStatusPill()
+                .frame(height: 32)
         }
-        .padding(.bottom, 6)
+        .padding(20)
         .confirmationDialog(
             "“\(app.pendingImageURL?.lastPathComponent ?? "")” is a disc image",
             isPresented: Binding(

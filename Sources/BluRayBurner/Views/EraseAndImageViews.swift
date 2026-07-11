@@ -12,8 +12,8 @@ struct EraseView: View {
             switch app.eraseVM.state {
             case .idle:
                 if app.eraseVM.canErase {
-                    Image(systemName: "eraser.fill").font(.system(size: 44)).foregroundStyle(.secondary)
-                    Text("Erase the inserted disc").font(.headline)
+                    Image(systemName: "eraser.fill").font(.system(size: 44)).foregroundStyle(Theme.textSecondary)
+                    Text("Erase the inserted disc").font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                     Picker("Mode", selection: $mode) {
                         Text("Quick — make the disc appear blank").tag(EraseMode.quick)
                         Text("Complete — erase every byte (slower)").tag(EraseMode.complete)
@@ -23,7 +23,7 @@ struct EraseView: View {
                     Button("Erase Disc", role: .destructive) {
                         app.eraseVM.erase(mode: mode)
                     }
-                    .adaptiveGlassProminentButton()
+                    .buttonStyle(GradientButtonStyle(gradient: Theme.burnGradient, shadow: Color(hex: 0x84221C).opacity(0.4)))
                 } else {
                     ContentUnavailableView(
                         "No rewritable disc",
@@ -38,21 +38,22 @@ struct EraseView: View {
 
             case .done:
                 Image(systemName: "checkmark.circle.fill").font(.system(size: 44)).foregroundStyle(.green)
-                Text("Disc erased").font(.headline)
+                Text("Disc erased").font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                 Button("Done") { app.eraseVM.reset() }
-                    .adaptiveGlassProminentButton()
+                    .buttonStyle(GradientButtonStyle())
                     .keyboardShortcut(.defaultAction)
 
             case .failed(let error):
                 Image(systemName: "xmark.octagon.fill").font(.system(size: 44)).foregroundStyle(.red)
-                Text("Erase failed").font(.headline)
-                Text(String(describing: error)).foregroundStyle(.secondary)
+                Text("Erase failed").font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                Text(String(describing: error)).foregroundStyle(Theme.textSecondary)
                 Button("OK") { app.eraseVM.reset() }
-                    .adaptiveGlassProminentButton()
+                    .buttonStyle(GradientButtonStyle())
                     .keyboardShortcut(.defaultAction)
             }
         }
         .frame(maxWidth: .infinity, minHeight: 260)
+        .padding(20)
     }
 }
 
@@ -71,8 +72,10 @@ struct ImageBurnView: View {
                     imageInfoCard(image)
                     validationLabel
                     Toggle("Verify after burn", isOn: $imageVM.verifyAfterBurn)
+                        .toggleStyle(QueimadaCheckboxStyle())
                     HStack {
                         Button("Choose Different Image…") { chooseImage() }
+                            .buttonStyle(QuietButtonStyle())
                         Button {
                             guard let device = app.deviceMonitor.currentDevice,
                                   let url = app.imageVM.selectedImage else { return }
@@ -84,20 +87,21 @@ struct ImageBurnView: View {
                         } label: {
                             Label("Burn Image", systemImage: "flame")
                         }
-                        .adaptiveGlassProminentButton()
+                        .buttonStyle(GradientButtonStyle(gradient: Theme.burnGradient, shadow: Color(hex: 0x84221C).opacity(0.4)))
                         .keyboardShortcut(.defaultAction)
                         .disabled(!app.imageVM.canBurn)
                     }
                 } else {
                     // Only reachable via "Choose Different Image…" → Cancel.
                     Button("Choose Image…") { chooseImage() }
-                        .adaptiveGlassButton()
+                        .buttonStyle(QuietButtonStyle())
                 }
             } else {
                 BurnProgressView()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(20)
     }
 
     /// The useful facts about the image before burning it.
@@ -105,25 +109,27 @@ struct ImageBurnView: View {
         VStack(spacing: 12) {
             Image(systemName: "opticaldisc.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(.secondary)
-            Text(image.lastPathComponent).font(.title3.weight(.semibold))
+                .foregroundStyle(Theme.textSecondary)
+            Text(image.lastPathComponent)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Theme.textPrimary)
 
             Grid(alignment: .leading, horizontalSpacing: 24, verticalSpacing: 6) {
                 GridRow {
-                    Text("Size").foregroundStyle(.secondary)
+                    Text("Size").foregroundStyle(Theme.textSecondary)
                     Text(app.imageVM.imageSizeBytes.map(ByteFormat.string) ?? "—")
                         .monospacedDigit()
                 }
                 GridRow {
-                    Text("Kind").foregroundStyle(.secondary)
+                    Text("Kind").foregroundStyle(Theme.textSecondary)
                     Text(kindDescription(image))
                 }
                 GridRow {
-                    Text("Modified").foregroundStyle(.secondary)
+                    Text("Modified").foregroundStyle(Theme.textSecondary)
                     Text(modifiedDescription(image))
                 }
                 GridRow {
-                    Text("Location").foregroundStyle(.secondary)
+                    Text("Location").foregroundStyle(Theme.textSecondary)
                     Text(image.deletingLastPathComponent().path)
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -131,7 +137,7 @@ struct ImageBurnView: View {
                 }
                 if let media = app.deviceMonitor.currentMedia, let size = app.imageVM.imageSizeBytes {
                     GridRow {
-                        Text("Target disc").foregroundStyle(.secondary)
+                        Text("Target disc").foregroundStyle(Theme.textSecondary)
                         Text("\(media.type.rawValue) — \(ByteFormat.string(max(media.capacityBytes - size, 0))) left after burn")
                             .monospacedDigit()
                     }
@@ -140,7 +146,8 @@ struct ImageBurnView: View {
             .font(.callout)
         }
         .padding(24)
-        .adaptiveGlass(in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Theme.insetTint, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
     }
 
     private func kindDescription(_ url: URL) -> String {

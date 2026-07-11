@@ -15,43 +15,46 @@ struct BurnProgressView: View {
                 Image(systemName: "opticaldisc.fill")
                     .font(.system(size: 44))
                     .symbolEffect(.pulse)
-                Text(phaseLabel).font(.headline)
+                Text(phaseLabel).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                 ProgressView(value: app.burnVM.overallProgress)
+                    .tint(Theme.accent)
                     .frame(maxWidth: 380)
                 Text("\(Int(app.burnVM.overallProgress * 100))%")
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.textSecondary)
                 Button("Cancel Burn", role: .destructive) {
                     app.burnVM.cancel()
                 }
-                .adaptiveGlassButton()
+                .buttonStyle(ClayButtonStyle())
 
             case .done:
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 44)).foregroundStyle(.green)
-                Text("Disc burned successfully").font(.headline)
+                Text("Disc burned successfully").font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                 Text("The disc was finalized\(verifiedSuffix) and is readable on macOS, Windows, and Linux.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                 Button("Done") { app.burnVM.reset() }
-                    .adaptiveGlassProminentButton()
+                    .buttonStyle(GradientButtonStyle())
                     .keyboardShortcut(.defaultAction)
 
             case .failed(let error):
                 Image(systemName: "xmark.octagon.fill")
                     .font(.system(size: 44)).foregroundStyle(.red)
-                Text(failureTitle(error)).font(.headline)
+                Text(failureTitle(error)).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                 Text(failureDetail(error))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                 Button("OK") { app.burnVM.reset() }
-                    .adaptiveGlassProminentButton()
+                    .buttonStyle(GradientButtonStyle())
                     .keyboardShortcut(.defaultAction)
             }
         }
         .padding(28)
-        .adaptiveGlass(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(Theme.insetTint, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
         .frame(maxWidth: .infinity, minHeight: 260)
+        .padding(20)
     }
 
     private var verifiedSuffix: String {

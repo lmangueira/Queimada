@@ -62,6 +62,12 @@ cp "$BIN" "$APP/Contents/MacOS/$TARGET"
 cp "$PLIST" "$APP/Contents/Info.plist"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
+# SwiftPM resource bundles (Bundle.module) live next to the built binary and
+# must ship inside Contents/Resources for the accessor to find them.
+for RES_BUNDLE in ".build/release/${TARGET}_"*.bundle; do
+  [[ -d "$RES_BUNDLE" ]] && cp -R "$RES_BUNDLE" "$APP/Contents/Resources/"
+done
+
 SIGN_FLAGS=(--force --sign "$SIGN_IDENTITY" --entitlements "$ENTITLEMENTS")
 if [[ "$HARDENED" == "1" ]]; then
   SIGN_FLAGS+=(--options runtime)
