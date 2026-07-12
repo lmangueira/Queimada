@@ -186,6 +186,89 @@ import Foundation
     }
 }
 
+/// Sidebar tree arrow-key navigation (up/down move, right expand/descend,
+/// left collapse/ascend) — the logic behind the keyboard handlers.
+@MainActor
+@Suite struct SidebarKeyboardNavTests {
+    let monitor: DeviceMonitor
+    let vm: CompileViewModel
+
+    init() {
+        monitor = DeviceMonitor(service: MockDiscBurningService())
+        vm = CompileViewModel(deviceMonitor: monitor)
+    }
+
+    /// root → A[A1, A2], B  (A has subfolders; A1/A2/B are leaf folders).
+    @discardableResult
+    private func seed() -> (a: UUID, a1: UUID, a2: UUID, b: UUID) {
+        let a1 = CompilationItem(name: "A1", sourceURL: URL(fileURLWithPath: "/A/A1"),
+                                 kind: .folder(children: [makeFile("f1", size: 1)]))
+        let a2 = CompilationItem(name: "A2", sourceURL: URL(fileURLWithPath: "/A/A2"),
+                                 kind: .folder(children: [makeFile("f2", size: 1)]))
+        let a = CompilationItem(name: "A", sourceURL: URL(fileURLWithPath: "/A"),
+                                kind: .folder(children: [a1, a2]))
+        let b = CompilationItem(name: "B", sourceURL: URL(fileURLWithPath: "/B"),
+                                kind: .folder(children: [makeFile("f3", size: 1)]))
+        vm.add(a)
+        vm.add(b)
+        return (a.id, a1.id, a2.id, b.id)
+    }
+
+    @Test func downAndUpMoveThroughVisibleRows() {
+        let ids = seed()
+        #expect(vm.effectiveSelection == CompileViewModel.rootID)
+        vm.selectNextRow(); #expect(vm.selectedFolderID == ids.a)
+        vm.selectNextRow(); #expect(vm.selectedFolderID == ids.a1)
+        vm.selectNextRow(); #expect(vm.selectedFolderID == ids.a2)
+        vm.selectNextRow(); #expect(vm.selectedFolderID == ids.b)
+        vm.selectNextRow(); #expect(vm.selectedFolderID == ids.b, "stays put at the last row")
+        vm.selectPreviousRow(); #expect(vm.selectedFolderID == ids.a2)
+    }
+
+    @Test func downSkipsHiddenChildrenOfCollapsedFolder() {
+        let ids = seed()
+        vm.collapse(ids.a)                 // A1/A2 hidden
+        vm.selectedFolderID = ids.a
+        vm.selectNextRow()                 // should skip straight to B
+        #expect(vm.selectedFolderID == ids.b)
+    }
+
+    @Test func rightExpandsThenDescendsIntoFirstChild() {
+        let ids = seed()
+        vm.collapse(ids.a)
+        vm.selectedFolderID = ids.a
+        vm.expandOrDescendRow()            // right → expand, selection unchanged
+        #expect(!vm.collapsedFolderIDs.contains(ids.a))
+        #expect(vm.selectedFolderID == ids.a)
+        vm.expandOrDescendRow()            // right → descend to first child
+        #expect(vm.selectedFolderID == ids.a1)
+    }
+
+    @Test func leftCollapsesThenAscendsToParent() {
+        let ids = seed()
+        vm.selectedFolderID = ids.a        // expanded by default
+        vm.collapseOrAscendRow()           // left → collapse
+        #expect(vm.collapsedFolderIDs.contains(ids.a))
+        #expect(vm.selectedFolderID == ids.a)
+        vm.collapseOrAscendRow()           // left → ascend to root
+        #expect(vm.selectedFolderID == CompileViewModel.rootID)
+    }
+
+    @Test func leftFromLeafAscendsToParent() {
+        let ids = seed()
+        vm.selectedFolderID = ids.a1
+        vm.collapseOrAscendRow()
+        #expect(vm.selectedFolderID == ids.a)
+    }
+
+    @Test func rightOnLeafFolderDoesNothing() {
+        let ids = seed()
+        vm.selectedFolderID = ids.a2
+        vm.expandOrDescendRow()
+        #expect(vm.selectedFolderID == ids.a2)
+    }
+}
+
 /// U7: erase gating and mode flow-through.
 @MainActor
 @Suite struct EraseViewModelTests {

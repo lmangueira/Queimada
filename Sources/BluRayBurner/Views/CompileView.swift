@@ -119,6 +119,7 @@ struct CompileFooterControls: View {
 /// contents on the right. Drops land in the selected folder.
 struct DiscTreeSplitView: View {
     @Environment(AppModel.self) private var app
+    @FocusState private var sidebarFocused: Bool
 
     var body: some View {
         HSplitView {
@@ -132,17 +133,37 @@ struct DiscTreeSplitView: View {
     // Sidebar: the disc root + folders-only tree. The tree renders as a flat
     // depth-first list inside a LazyVStack so huge compilations only build
     // and lay out the visible rows (critical during screen transitions).
+    // Focusable so arrow keys navigate the tree (up/down = move, right =
+    // expand/descend, left = collapse/ascend); selection scrolls into view.
     private var sidebar: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 2) {
-                sidebarHeader
-                rootRow
-                ForEach(app.compileVM.folderRows) { row in
-                    folderRow(row)
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 2) {
+                    sidebarHeader
+                    rootRow.id(CompileViewModel.rootID)
+                    ForEach(app.compileVM.folderRows) { row in
+                        folderRow(row).id(row.id)
+                    }
+                }
+                .padding(.init(top: 12, leading: 10, bottom: 12, trailing: 10))
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .focusable()
+            .focusEffectDisabled()
+            .focused($sidebarFocused)
+            .onMoveCommand { direction in
+                switch direction {
+                case .up: app.compileVM.selectPreviousRow()
+                case .down: app.compileVM.selectNextRow()
+                case .left: app.compileVM.collapseOrAscendRow()
+                case .right: app.compileVM.expandOrDescendRow()
+                default: break
                 }
             }
-            .padding(.init(top: 12, leading: 10, bottom: 12, trailing: 10))
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .onChange(of: app.compileVM.effectiveSelection) { _, id in
+                withAnimation(.easeOut(duration: 0.12)) { proxy.scrollTo(id, anchor: .center) }
+            }
+            .onAppear { sidebarFocused = true }
         }
         .frame(maxHeight: .infinity)
         .background(Theme.windowBg)
@@ -166,6 +187,7 @@ struct DiscTreeSplitView: View {
             indent: 0
         ) {
             app.compileVM.selectedFolderID = CompileViewModel.rootID
+            sidebarFocused = true
         }
     }
 
@@ -176,9 +198,18 @@ struct DiscTreeSplitView: View {
             label: row.name,
             emphasized: false,
             selected: app.compileVM.effectiveSelection == row.id,
-            indent: row.depth + 1
+            indent: row.depth + 1,
+            expanded: row.hasChildren ? row.isExpanded : nil,
+            onToggle: row.hasChildren ? {
+                app.compileVM.toggleExpansion(row.id)
+                sidebarFocused = true
+            } : nil
         ) {
+            // Selecting a folder also reveals its subfolders — clicking a folder
+            // should always show what's inside it. Collapse is via the chevron.
             app.compileVM.selectedFolderID = row.id
+            if row.hasChildren { app.compileVM.expand(row.id) }
+            sidebarFocused = true
         }
     }
 
@@ -237,6 +268,8 @@ struct DiscTreeSplitView: View {
 }
 
 /// One sidebar row: selection tint per the design (cyan wash + rounded 6).
+/// Rows that represent a folder with subfolders carry a disclosure chevron
+/// that toggles expansion independently of selecting the row.
 private struct SidebarRow: View {
     let icon: String
     let iconColor: Color
@@ -244,30 +277,60 @@ private struct SidebarRow: View {
     let emphasized: Bool
     let selected: Bool
     let indent: Int
-    let action: () -> Void
+    /// nil = no chevron (disc root or a folder without subfolders); the slot is
+    /// still reserved so icons stay aligned. Otherwise the chevron reflects the
+    /// expanded state and taps call `onToggle`.
+    var expanded: Bool? = nil
+    var onToggle: (() -> Void)? = nil
+    let onSelect: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 7) {
-                Image(systemName: icon)
-                    .font(.system(size: 12))
-                    .foregroundStyle(iconColor)
-                Text(label)
-                    .font(.system(size: 13, weight: emphasized ? .medium : .regular))
-                    .foregroundStyle(Theme.textPrimary)
-                    .lineLimit(1)
-                Spacer(minLength: 0)
+        // Chevron and row content are sibling buttons — never nested — so a tap
+        // on one never triggers the other (toggle vs. select stay distinct).
+        HStack(spacing: 7) {
+            disclosure
+            Button(action: onSelect) {
+                HStack(spacing: 7) {
+                    Image(systemName: icon)
+                        .font(.system(size: 12))
+                        .foregroundStyle(iconColor)
+                    Text(label)
+                        .font(.system(size: 13, weight: emphasized ? .medium : .regular))
+                        .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
             }
-            .padding(.vertical, 6)
-            .padding(.leading, 8 + CGFloat(indent) * 10)
-            .padding(.trailing, 8)
-            .background(
-                selected ? Theme.accent.opacity(0.15) : Color.clear,
-                in: RoundedRectangle(cornerRadius: 6, style: .continuous)
-            )
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .padding(.vertical, 6)
+        .padding(.leading, 8 + CGFloat(indent) * 12)
+        .padding(.trailing, 8)
+        .background(
+            selected ? Theme.accent.opacity(0.15) : Color.clear,
+            in: RoundedRectangle(cornerRadius: 6, style: .continuous)
+        )
+    }
+
+    @ViewBuilder
+    private var disclosure: some View {
+        if let expanded {
+            Button {
+                onToggle?()
+            } label: {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(Theme.textSecondary)
+                    .rotationEffect(.degrees(expanded ? 90 : 0))
+                    .animation(.easeInOut(duration: 0.15), value: expanded)
+                    .frame(width: 16, height: 16)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        } else {
+            Color.clear.frame(width: 16, height: 16)
+        }
     }
 }
 
