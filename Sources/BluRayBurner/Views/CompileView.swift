@@ -128,6 +128,11 @@ struct CompileFooterControls: View {
 struct DiscTreeSplitView: View {
     @Environment(AppModel.self) private var app
     @FocusState private var sidebarFocused: Bool
+    // Inline rename of the disc volume name (Finder-style: click the root row
+    // while it's already selected).
+    @State private var renamingVolume = false
+    @State private var volumeDraft = ""
+    @FocusState private var volumeFieldFocused: Bool
 
     var body: some View {
         HSplitView {
@@ -185,18 +190,60 @@ struct DiscTreeSplitView: View {
             .padding(.init(top: 4, leading: 8, bottom: 3, trailing: 8))
     }
 
+    @ViewBuilder
     private var rootRow: some View {
-        SidebarRow(
-            icon: "opticaldisc",
-            iconColor: Theme.accent,
-            label: app.compileVM.compilation.volumeName,
-            emphasized: true,
-            selected: app.compileVM.effectiveSelection == CompileViewModel.rootID,
-            indent: 0
-        ) {
-            app.compileVM.selectedFolderID = CompileViewModel.rootID
-            sidebarFocused = true
+        if renamingVolume {
+            // Same geometry as SidebarRow (chevron slot + icon + text) with the
+            // label swapped for a text field.
+            HStack(spacing: 7) {
+                Color.clear.frame(width: 16, height: 16)
+                Image(systemName: "opticaldisc")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.accent)
+                TextField("Disc name", text: $volumeDraft)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Theme.textPrimary)
+                    .focused($volumeFieldFocused)
+                    .onSubmit { commitVolumeRename() }
+                    .onExitCommand { renamingVolume = false }
+                    .onChange(of: volumeFieldFocused) { _, focused in
+                        if !focused && renamingVolume { commitVolumeRename() }
+                    }
+            }
+            .padding(.vertical, 6)
+            .padding(.horizontal, 8)
+            .background(Theme.accent.opacity(0.15), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+        } else {
+            SidebarRow(
+                icon: "opticaldisc",
+                iconColor: Theme.accent,
+                label: app.compileVM.compilation.volumeName,
+                emphasized: true,
+                selected: app.compileVM.effectiveSelection == CompileViewModel.rootID,
+                indent: 0
+            ) {
+                // Click while already selected → rename (Finder-style).
+                if app.compileVM.effectiveSelection == CompileViewModel.rootID {
+                    volumeDraft = app.compileVM.compilation.volumeName
+                    renamingVolume = true
+                    volumeFieldFocused = true
+                } else {
+                    app.compileVM.selectedFolderID = CompileViewModel.rootID
+                    sidebarFocused = true
+                }
+            }
+            .help("The disc's volume name — click again to rename.")
         }
+    }
+
+    private func commitVolumeRename() {
+        renamingVolume = false
+        let name = volumeDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !name.isEmpty {
+            app.compileVM.setVolumeName(name)
+        }
+        sidebarFocused = true
     }
 
     private func folderRow(_ row: FolderRow) -> some View {
