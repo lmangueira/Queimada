@@ -215,25 +215,29 @@ struct DiscTreeSplitView: View {
             .padding(.horizontal, 8)
             .background(Theme.accent.opacity(0.15), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
         } else {
-            SidebarRow(
-                icon: "opticaldisc",
-                iconColor: Theme.accent,
-                label: app.compileVM.compilation.volumeName,
-                emphasized: true,
-                selected: app.compileVM.effectiveSelection == CompileViewModel.rootID,
-                indent: 0
-            ) {
-                // Click while already selected → rename (Finder-style).
-                if app.compileVM.effectiveSelection == CompileViewModel.rootID {
-                    volumeDraft = app.compileVM.compilation.volumeName
-                    renamingVolume = true
-                    volumeFieldFocused = true
-                } else {
-                    app.compileVM.selectedFolderID = CompileViewModel.rootID
-                    sidebarFocused = true
+            SidebarRowDropTarget { url in
+                app.addDataItems(urls: [url], into: CompileViewModel.rootID)
+            } content: {
+                SidebarRow(
+                    icon: "opticaldisc",
+                    iconColor: Theme.accent,
+                    label: app.compileVM.compilation.volumeName,
+                    emphasized: true,
+                    selected: app.compileVM.effectiveSelection == CompileViewModel.rootID,
+                    indent: 0
+                ) {
+                    // Click while already selected → rename (Finder-style).
+                    if app.compileVM.effectiveSelection == CompileViewModel.rootID {
+                        volumeDraft = app.compileVM.compilation.volumeName
+                        renamingVolume = true
+                        volumeFieldFocused = true
+                    } else {
+                        app.compileVM.selectedFolderID = CompileViewModel.rootID
+                        sidebarFocused = true
+                    }
                 }
+                .help("The disc's volume name — click again to rename.")
             }
-            .help("The disc's volume name — click again to rename.")
         }
     }
 
@@ -247,24 +251,29 @@ struct DiscTreeSplitView: View {
     }
 
     private func folderRow(_ row: FolderRow) -> some View {
-        SidebarRow(
-            icon: "folder.fill",
-            iconColor: Theme.gold,
-            label: row.name,
-            emphasized: false,
-            selected: app.compileVM.effectiveSelection == row.id,
-            indent: row.depth + 1,
-            expanded: row.hasChildren ? row.isExpanded : nil,
-            onToggle: row.hasChildren ? {
-                app.compileVM.toggleExpansion(row.id)
+        SidebarRowDropTarget { url in
+            app.addDataItems(urls: [url], into: row.id)
+            app.compileVM.expand(row.id)
+        } content: {
+            SidebarRow(
+                icon: "folder.fill",
+                iconColor: Theme.gold,
+                label: row.name,
+                emphasized: false,
+                selected: app.compileVM.effectiveSelection == row.id,
+                indent: row.depth + 1,
+                expanded: row.hasChildren ? row.isExpanded : nil,
+                onToggle: row.hasChildren ? {
+                    app.compileVM.toggleExpansion(row.id)
+                    sidebarFocused = true
+                } : nil
+            ) {
+                // Selecting a folder also reveals its subfolders — clicking a folder
+                // should always show what's inside it. Collapse is via the chevron.
+                app.compileVM.selectedFolderID = row.id
+                if row.hasChildren { app.compileVM.expand(row.id) }
                 sidebarFocused = true
-            } : nil
-        ) {
-            // Selecting a folder also reveals its subfolders — clicking a folder
-            // should always show what's inside it. Collapse is via the chevron.
-            app.compileVM.selectedFolderID = row.id
-            if row.hasChildren { app.compileVM.expand(row.id) }
-            sidebarFocused = true
+            }
         }
     }
 
@@ -329,6 +338,36 @@ struct DiscTreeSplitView: View {
             }
         }
         .background(Theme.panelBg)
+    }
+}
+
+/// Makes a sidebar row a drop destination: dropping files/folders from Finder
+/// onto the row adds them inside that virtual folder. Cyan outline while a
+/// drag hovers the row.
+private struct SidebarRowDropTarget<Content: View>: View {
+    /// Called on the main actor with each resolved dropped URL.
+    let onDropURL: (URL) -> Void
+    @ViewBuilder let content: () -> Content
+    @State private var targeted = false
+
+    var body: some View {
+        content()
+            .overlay(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .strokeBorder(Theme.accent, lineWidth: 1.5)
+                    .opacity(targeted ? 1 : 0)
+            )
+            .onDrop(of: [UTType.fileURL], isTargeted: $targeted) { providers in
+                var accepted = false
+                for provider in providers where provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+                    accepted = true
+                    _ = provider.loadObject(ofClass: URL.self) { url, _ in
+                        guard let url else { return }
+                        Task { @MainActor in onDropURL(url) }
+                    }
+                }
+                return accepted
+            }
     }
 }
 

@@ -184,6 +184,34 @@ import Foundation
         #expect(vm.visibleItems.map(\.name) == ["f.bin"])
         monitor.stop()
     }
+
+    @Test func addIntoTargetsSpecificFolderRegardlessOfSelection() {
+        // Sidebar drops pin their destination at drop time.
+        let folder = CompilationItem(
+            name: "docs", sourceURL: URL(fileURLWithPath: "/docs"), kind: .folder(children: [])
+        )
+        vm.add(folder)
+        vm.selectedFolderID = CompileViewModel.rootID  // selection stays at root
+
+        vm.add(makeFile("inside.txt", size: 1), into: folder.id)
+        vm.add(makeFile("at-root.txt", size: 1), into: CompileViewModel.rootID)
+
+        #expect(vm.compilation.item(withID: folder.id)?.children?.map(\.name) == ["inside.txt"])
+        #expect(vm.compilation.items.map(\.name) == ["docs", "at-root.txt"])
+        monitor.stop()
+    }
+
+    @Test func addIntoPrunedFolderFallsBackToRoot() {
+        let folder = CompilationItem(
+            name: "gone", sourceURL: URL(fileURLWithPath: "/gone"), kind: .folder(children: [])
+        )
+        vm.add(folder)
+        vm.remove(id: folder.id)  // pruned while a drop was enumerating
+
+        vm.add(makeFile("orphan.txt", size: 1), into: folder.id)
+        #expect(vm.compilation.items.map(\.name) == ["orphan.txt"], "never silently dropped")
+        monitor.stop()
+    }
 }
 
 /// Sidebar tree arrow-key navigation (up/down move, right expand/descend,

@@ -84,7 +84,9 @@ final class AppModel {
     /// Enumerate dropped URLs off the main thread (recursive folder walks can
     /// take seconds for large trees) and add the resulting items on the main
     /// actor. Keeps drops — and the screen transition they trigger — smooth.
-    func addDataItems(urls: [URL]) {
+    /// `target` pins the destination folder at drop time (sidebar row drops);
+    /// nil adds into whatever folder is selected when enumeration finishes.
+    func addDataItems(urls: [URL], into target: UUID? = nil) {
         pendingAdds += 1
         Task {
             defer { pendingAdds -= 1 }
@@ -92,7 +94,11 @@ final class AppModel {
                 urls.compactMap { CompilationItemFactory.make(from: $0) }
             }.value
             for item in items {
-                compileVM.add(item)
+                if let target {
+                    compileVM.add(item, into: target)
+                } else {
+                    compileVM.add(item)
+                }
             }
         }
     }

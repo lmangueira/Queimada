@@ -225,8 +225,13 @@ public final class CompileViewModel {
 
     /// Adds into the currently selected virtual folder (root when at root).
     public func add(_ item: CompilationItem) {
-        let target = effectiveSelection
-        compilation.add(item, into: target == Self.rootID ? nil : target)
+        add(item, into: effectiveSelection)
+    }
+
+    /// Adds into a specific virtual folder (sidebar drop target). The root
+    /// sentinel — or a folder pruned mid-flight — lands the item at the root.
+    public func add(_ item: CompilationItem, into folderID: UUID) {
+        compilation.add(item, into: folderID == Self.rootID ? nil : folderID)
     }
 
     public func remove(id: UUID) {
