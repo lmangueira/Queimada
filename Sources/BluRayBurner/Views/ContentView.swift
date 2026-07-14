@@ -28,6 +28,10 @@ struct ContentView: View {
             }
         }
         .background(Theme.windowBg)
+        // Extend into the window's reserved (transparent) titlebar region so
+        // our compact bar IS the titlebar — otherwise ~28pt of empty system
+        // titlebar stacks on top of it. Traffic lights overlay the bar.
+        .ignoresSafeArea(edges: .top)
         .animation(Theme.Motion.screen, value: app.screen)
         .task { await SnapshotDriver.runIfRequested(app: app) }
     }
@@ -40,22 +44,22 @@ struct ContentView: View {
         reduceMotion ? .opacity : Theme.Motion.workflowScreen
     }
 
-    /// Custom titlebar (the system one is hidden): centered title with the
-    /// app name as subtitle past the welcome screen. Draggable like a real
-    /// titlebar; traffic lights overlay the leading edge.
+    /// Custom titlebar (the system one is hidden): a single compact line —
+    /// screen title plus the QUEIMADA brand past the welcome screen.
+    /// Draggable like a real titlebar; traffic lights overlay the leading edge.
     private var titlebar: some View {
-        VStack(spacing: 1) {
+        HStack(spacing: 6) {
             Text(screenTitle)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
             if app.screen != .welcome {
-                Text("Blu-Ray Burner")
-                    .font(.system(size: 10.5))
+                Text("· QUEIMADA")
+                    .font(.system(size: 11))
                     .foregroundStyle(Theme.textTertiary)
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 52)
+        .frame(height: 36)
         .background(Theme.chromeTint)
         .contentShape(Rectangle())
         .gesture(WindowDragGesture())
@@ -104,7 +108,7 @@ struct ContentView: View {
 
     private var screenTitle: String {
         switch app.screen {
-        case .welcome: return "Blu-Ray Burner"
+        case .welcome: return "QUEIMADA"
         case .compile: return "Data Disc"
         case .imageBurn: return "Write Disc Image"
         case .erase: return "Erase Disc"
