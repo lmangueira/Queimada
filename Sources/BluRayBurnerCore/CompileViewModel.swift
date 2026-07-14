@@ -196,6 +196,23 @@ public final class CompileViewModel {
         return compilation.item(withID: effectiveSelection)?.name ?? compilation.volumeName
     }
 
+    /// True when the selection is inside a folder (i.e. "go up" is possible).
+    public var canGoUp: Bool { effectiveSelection != Self.rootID }
+
+    /// Select the folder enclosing the current selection (root for top-level).
+    public func selectEnclosingFolder() {
+        func parent(of id: UUID, in items: [CompilationItem], parentID: UUID) -> UUID? {
+            for item in items {
+                if item.id == id { return parentID }
+                if let children = item.children,
+                   let hit = parent(of: id, in: children, parentID: item.id) { return hit }
+            }
+            return nil
+        }
+        selectedFolderID = parent(of: effectiveSelection, in: compilation.items, parentID: Self.rootID)
+            ?? Self.rootID
+    }
+
     private static func folderNodes(from items: [CompilationItem]) -> [FolderNode] {
         items.compactMap { item in
             guard let children = item.children else { return nil }

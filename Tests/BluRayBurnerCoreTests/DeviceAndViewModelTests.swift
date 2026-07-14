@@ -201,6 +201,25 @@ import Foundation
         monitor.stop()
     }
 
+    @Test func selectEnclosingFolderWalksUpToRoot() {
+        let inner = CompilationItem(
+            name: "inner", sourceURL: URL(fileURLWithPath: "/outer/inner"), kind: .folder(children: [])
+        )
+        let outer = CompilationItem(
+            name: "outer", sourceURL: URL(fileURLWithPath: "/outer"), kind: .folder(children: [inner])
+        )
+        vm.add(outer)
+
+        vm.selectedFolderID = inner.id
+        #expect(vm.canGoUp)
+        vm.selectEnclosingFolder()
+        #expect(vm.selectedFolderID == outer.id)
+        vm.selectEnclosingFolder()
+        #expect(vm.selectedFolderID == CompileViewModel.rootID)
+        #expect(!vm.canGoUp, "no up from the disc root")
+        monitor.stop()
+    }
+
     @Test func addIntoPrunedFolderFallsBackToRoot() {
         let folder = CompilationItem(
             name: "gone", sourceURL: URL(fileURLWithPath: "/gone"), kind: .folder(children: [])

@@ -133,6 +133,8 @@ struct DiscTreeSplitView: View {
     @State private var renamingVolume = false
     @State private var volumeDraft = ""
     @FocusState private var volumeFieldFocused: Bool
+    /// Contents-pane row density; persists across launches.
+    @AppStorage("compactRows") private var compactRows = false
 
     var body: some View {
         HSplitView {
@@ -278,12 +280,43 @@ struct DiscTreeSplitView: View {
     }
 
     // Detail: contents of the selected folder.
+    /// The "…/​.." row: double-click to go to the enclosing folder, mirroring
+    /// CompilationRow's geometry in both densities.
+    private var parentRow: some View {
+        HStack(spacing: compactRows ? 8 : 10) {
+            Image(systemName: "arrow.turn.left.up")
+                .font(.system(size: compactRows ? 13 : 17))
+                .foregroundStyle(Theme.textTertiary)
+                .frame(width: compactRows ? 18 : 22)
+            Text("..")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+            Spacer()
+        }
+        .padding(.init(top: compactRows ? 4 : 8, leading: 10, bottom: compactRows ? 4 : 8, trailing: 10))
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) {
+            app.compileVM.selectEnclosingFolder()
+        }
+        .help("Enclosing folder — double-click to go up")
+    }
+
     private var detail: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(app.compileVM.selectedFolderName)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
+                    .background {
+                        // Invisible carrier for ⌘↑ (go up) — the visible paths
+                        // are the ".." row and the sidebar.
+                        if app.compileVM.canGoUp {
+                            Button("") { app.compileVM.selectEnclosingFolder() }
+                                .keyboardShortcut(.upArrow, modifiers: .command)
+                                .opacity(0)
+                                .frame(width: 0, height: 0)
+                        }
+                    }
                 Spacer()
                 if app.pendingAdds > 0 {
                     HStack(spacing: 6) {
@@ -298,6 +331,17 @@ struct DiscTreeSplitView: View {
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.textTertiary)
                 }
+
+                Picker("Row density", selection: $compactRows) {
+                    Image(systemName: "list.bullet.below.rectangle").tag(false)
+                        .help("Comfortable — item count below the name")
+                    Image(systemName: "list.bullet").tag(true)
+                        .help("Compact — single-line rows")
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .controlSize(.small)
+                .fixedSize()
             }
             .padding(.init(top: 14, leading: 20, bottom: 14, trailing: 20))
             Hairline()
@@ -318,14 +362,25 @@ struct DiscTreeSplitView: View {
                 .padding()
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 2) {
-                        ForEach(app.compileVM.visibleItems) { item in
-                            CompilationRow(item: item) {
+                    LazyVStack(spacing: 0) {
+                        // ".." row: the enclosing folder, when there is one.
+                        if app.compileVM.canGoUp {
+                            parentRow
+                        }
+                        // Zebra striping for readability; double-click a folder
+                        // to drill into it (single click no longer navigates).
+                        // Stripe phase accounts for the ".." row above.
+                        let stripeOffset = app.compileVM.canGoUp ? 1 : 0
+                        ForEach(Array(app.compileVM.visibleItems.enumerated()), id: \.element.id) { index, item in
+                            CompilationRow(item: item, compact: compactRows) {
                                 app.compileVM.remove(id: item.id)
                             }
+                            .background(
+                                (index + stripeOffset).isMultiple(of: 2) ? Color.clear : Color.white.opacity(0.035),
+                                in: RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            )
                             .contentShape(Rectangle())
-                            .onTapGesture {
-                                // Click a folder to drill into it.
+                            .onTapGesture(count: 2) {
                                 if item.children != nil {
                                     app.compileVM.selectedFolderID = item.id
                                 }
@@ -440,28 +495,43 @@ private struct SidebarRow: View {
 
 /// One row of the compilation tree: icon, name, size/child summary, and a
 /// remove control that prunes the item from the burn set only — nothing is
-/// deleted from disk.
+/// deleted from disk. `compact` renders a tighter single line with the item
+/// count inline on the right instead of under the name.
 struct CompilationRow: View {
     let item: CompilationItem
+    var compact = false
     let onRemove: () -> Void
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: compact ? 8 : 10) {
             Image(systemName: icon)
-                .font(.system(size: 17))
+                .font(.system(size: compact ? 13 : 17))
                 .foregroundStyle(item.children != nil ? Theme.gold : Theme.textSecondary)
-                .frame(width: 22)
-            VStack(alignment: .leading, spacing: 1) {
+                .frame(width: compact ? 18 : 22)
+            if compact {
                 Text(item.name)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                Spacer()
                 if let count = item.children?.count {
                     Text("\(count) item\(count == 1 ? "" : "s")")
                         .font(.system(size: 11))
                         .foregroundStyle(Theme.textSecondary)
                 }
+            } else {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(item.name)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary)
+                    if let count = item.children?.count {
+                        Text("\(count) item\(count == 1 ? "" : "s")")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                Spacer()
             }
-            Spacer()
             Text(ByteFormat.string(item.sizeBytes))
                 .font(.system(size: 12))
                 .foregroundStyle(Theme.textSecondary)
@@ -474,12 +544,12 @@ struct CompilationRow: View {
                             .font(.system(size: 8, weight: .bold))
                             .foregroundStyle(Color(hex: 0xFFF2E8))
                     )
-                    .frame(width: 20, height: 20)
+                    .frame(width: compact ? 16 : 20, height: compact ? 16 : 20)
             }
             .buttonStyle(.plain)
             .help("Remove from the burn set — the file on your disk is not touched.")
         }
-        .padding(.init(top: 8, leading: 10, bottom: 8, trailing: 10))
+        .padding(.init(top: compact ? 4 : 8, leading: 10, bottom: compact ? 4 : 8, trailing: 10))
         .background(Color.clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
