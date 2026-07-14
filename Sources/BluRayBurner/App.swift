@@ -78,11 +78,16 @@ final class AppModel {
         screen = .compile
     }
 
+    /// In-flight drop enumerations — non-zero shows "Adding files…" in the UI.
+    private(set) var pendingAdds = 0
+
     /// Enumerate dropped URLs off the main thread (recursive folder walks can
     /// take seconds for large trees) and add the resulting items on the main
     /// actor. Keeps drops — and the screen transition they trigger — smooth.
     func addDataItems(urls: [URL]) {
+        pendingAdds += 1
         Task {
+            defer { pendingAdds -= 1 }
             let items = await Task.detached(priority: .userInitiated) {
                 urls.compactMap { CompilationItemFactory.make(from: $0) }
             }.value

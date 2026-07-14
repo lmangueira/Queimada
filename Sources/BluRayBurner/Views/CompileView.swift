@@ -26,15 +26,23 @@ struct CompileView: View {
         Group {
             if app.compileVM.compilation.isEmpty {
                 VStack(spacing: 10) {
-                    Image(systemName: "square.and.arrow.down.on.square")
-                        .font(.system(size: 40, weight: .light))
-                        .foregroundStyle(dropTargeted ? Theme.accent : Theme.textSecondary)
-                    Text("Drag files or folders here")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Theme.textPrimary)
-                    Text("Everything you drop is written exactly as-is — names, folders, and contents.")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Theme.textSecondary)
+                    if app.pendingAdds > 0 {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("Adding files…")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Theme.textSecondary)
+                    } else {
+                        Image(systemName: "square.and.arrow.down.on.square")
+                            .font(.system(size: 40, weight: .light))
+                            .foregroundStyle(dropTargeted ? Theme.accent : Theme.textSecondary)
+                        Text("Drag files or folders here")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("Everything you drop is written exactly as-is — names, folders, and contents.")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -221,9 +229,19 @@ struct DiscTreeSplitView: View {
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
-                Text("Drops land here")
+                if app.pendingAdds > 0 {
+                    HStack(spacing: 6) {
+                        ProgressView()
+                            .controlSize(.mini)
+                        Text("Adding files…")
+                    }
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.textTertiary)
+                } else {
+                    Text("Drops land here")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.textTertiary)
+                }
             }
             .padding(.init(top: 14, leading: 20, bottom: 14, trailing: 20))
             Hairline()
